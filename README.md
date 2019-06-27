@@ -1,6 +1,7 @@
 # host-info.sh
 
 ##About the script
+
 A bash-script to get various info about a given machine on the internet:
 
 * Geographic location of the device (country and city)
@@ -27,6 +28,7 @@ If the device is given with a `http` or `https` address, the following is report
 The certificate information is retrieved using [openssl](https://www.openssl.org/docs/man1.0.2/man1/) and the server info comes from the [HTTP header](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) and is retrieved with [curl --head](https://curl.haxx.se/docs/manpage.html).
 
 ##Usage
+
 You will get the most out of it with a URL. Simply copy it from a web browser and paste in the terminal!
 
 1. URL: `host-info.sh https://dns.name:port/path`
@@ -35,7 +37,8 @@ You will get the most out of it with a URL. Simply copy it from a web browser an
 
 -----
 
-##Screen shots:  
+##Screen shots:
+
 ![](host-info_example_1.png)  
 
 ![](host-info_example_2.png)  
