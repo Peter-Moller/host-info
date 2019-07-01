@@ -75,9 +75,16 @@ fi
 
 # Find out what port is being used
 Port="$(echo "$NameToCheck" | sed -e 's;https*://;;g' -e 's;/.*;;g' | cut -d: -f2 | grep -o "[0-9]*")"
-[ -n "$(echo "$NameToCheck" | grep -o "https://")" ] && Https="t" || Https=""
-# If no port specified, but https, assume 443
-[ -n "$Https" -a -z "$Port" ] && Port=443
+# If no port given, see if the 'https' is specified. If so, $PortGiven indicates that
+# Note: 'http://' does *NOT* have to mean no TLS!
+if [ -n "$(echo "$NameToCheck" | grep -o "https://")" ]; then
+	PortGiven="t"
+	Port=443
+else
+	PortGiven=""
+	Port=443
+fi
+
 
 
 OutFile="/tmp/${IP}.json"
@@ -153,8 +160,8 @@ function SSLInfo()
 function HostInfo()
 {
 	if [ "$NameToCheck" = "$IP" -o "$NameToCheck" = "$DNS" ]; then
-		CurlInfoHttps="$(curl --head https://${IP})"
-		CurlInfoHttp="$(curl --head http://${IP})"
+		CurlInfoHttps="$(curl --silent --head https://${IP})"
+		CurlInfoHttp="$(curl --silent --head http://${IP})"
 	else
 		# Frist see if the cert is self signed
 		if curl --silent --head "$NameToCheck"  >&/dev/null; [ "$?" -eq 60 ]; then
@@ -188,6 +195,7 @@ echo "   Org.: $Org"
 echo
 if [ $SSLValid -eq 0 ]; then
 	printf "${ESC}${BoldFace}mCertificate info:${Reset}\n"
+	[ -z "$PortGiven" ] && printf "${ESC}${ItalicFace}mNo port given: SSL-info based on a guess of port \"443\"!!${Reset}\n"
 	echo "Info:           ${SSLReturnText}"
 	echo "Registered DNS: ${SSLDNS:---no extra DNS names--}"
 	echo "Valid from:     $SSLValidFrom"
