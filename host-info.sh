@@ -67,7 +67,11 @@ else
 	# Gräv ut DNS-biten av URL:en
 	DNS="$(echo "$NameToCheck" | sed -e 's;https*://;;g' -e 's;/.*;;g' -e 's/:[0-9]*//')"
 	# DNS=www.youtube.com
-	
+	if [ -n "$(echo "$DNS" | egrep -o '\*')" ]; then
+		echo "Can NOT use a wildcard for input!"
+		echo "Will exit now..."
+		exit 1
+	fi
 	# Omvandla DNS-namn till IP-nummer:
 	IP="$(/usr/bin/dig +search +short $DNS | tail -1)"
 	# IP=80.239.174.87
@@ -77,14 +81,17 @@ fi
 Port="$(echo "$NameToCheck" | sed -e 's;https*://;;g' -e 's;/.*;;g' | cut -d: -f2 | grep -o "[0-9]*")"
 # If no port given, see if the 'https' is specified. If so, $PortGiven indicates that
 # Note: 'http://' does *NOT* have to mean no TLS!
-if [ -n "$(echo "$NameToCheck" | grep -o "https://")" ]; then
-	PortGiven="t"
-	Port=443
+if [ -z "$Port" ]; then
+	if [ -n "$(echo "$NameToCheck" | grep -o "https://")" ]; then
+		PortGiven="t"
+		Port=443
+	else
+		PortGiven=""
+		Port=443
+	fi
 else
-	PortGiven=""
-	Port=443
+	PortGiven="t"
 fi
-
 
 
 OutFile="/tmp/${IP}.json"
@@ -154,6 +161,12 @@ function SSLInfo()
 	# TLS 1.3	2018
 	[ "$SSLProtocol" = "TLSv1" -o "$SSLProtocol" = "TLSv1.1" ] && SSLProtocol="$SSLProtocol (old: will be deprecated in 2020)"
 	SSLIssuer="$(echo "${SSLResult}" | openssl x509 -noout -issuer | sed -e 's/issuer= //')"
+	# Is the cert “appropriate”, i.e. does the cert actually cover the name we are looking at?
+	if [ -n "$(echo "$SSLDNS" | egrep -o "$DNS")" -o -n "$(echo "$SSLDNS" | egrep -o "\*\.$(echo "$DNS" | cut -d. -f2-)")" ]; then
+		SSLAppropriate="t"
+	else
+		SSLAppropriate=""
+	fi
 }
 
 # Get info about host (through 'curl')
@@ -196,8 +209,13 @@ echo
 if [ $SSLValid -eq 0 ]; then
 	printf "${ESC}${BoldFace}mCertificate info:${Reset}\n"
 	[ -z "$PortGiven" ] && printf "${ESC}${ItalicFace}mNo port given: SSL-info based on a guess of port \"443\"!!${Reset}\n"
-	echo "Info:           ${SSLReturnText}"
-	echo "Registered DNS: ${SSLDNS:---no extra DNS names--}"
+	if [ "$SSLReturnText" = "Certificate is valid" ]; then 
+		printf "${ESC}${GreenFont}mInfo:           Certificate is valid${Reset}\n"
+	else
+		echo "Info:           ${SSLReturnText}"
+	fi
+	printf "Registered DNS: ${SSLDNS:---no extra DNS names--}"
+	[ -z "$SSLAppropriate" ] && printf "   ${ESC}${RedFont}mNote: this certificate DOES NOT cover \"$DNS\"!${Reset}\n" || printf "\n"
 	echo "Valid from:     $SSLValidFrom"
 	echo "Valid to:       $SSLValidTo"
 	echo "Protocol:       ${SSLProtocol}"
