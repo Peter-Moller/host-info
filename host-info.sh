@@ -228,7 +228,7 @@ if [ -z "$OpenSSLToOld" ]; then
 		echo "Issuer:         ${SSLIssuer}"
 	fi
 else
-	echo "OpenSSL is too old (version: $(openssl version 2>/dev/null)) to test certificates. Upgrade OpenSSL or use a more modern OS!"
+	echo "OpenSSL is too old (version: $(openssl version 2>/dev/null | sed -e 's/OpenSSL //')) to test certificates. Upgrade OpenSSL or use a more modern OS!"
 fi
 if [ -n "$CurlResponse" ]; then
 	echo
