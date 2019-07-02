@@ -157,7 +157,6 @@ function SSLInfo()
 		SSLReturnText="$(echo "$SSLReturnCode" | cut -d\( -f2 | cut -d\) -f1) (code: $(echo "$SSLReturnCode" | cut -d\( -f1 | sed -e 's/\ //g'))"  # SSLReturnText='certificate has expired (code: 10)'
 	fi
 	SSLDNS="$(echo "${SSLResult}" | openssl x509 -noout -text | grep DNS: | sed -e 's/^\ *//' -e 's/DNS://g')"
-	#SSLDates="$(echo "${SSLResult}" | openssl x509 -noout -dates | sed -e 's/notBefore=/Valid from: /' -e 's/notAfter=/Valid till: /')"
 	SSLValidFrom="$(echo "${SSLResult}" | openssl x509 -noout -startdate | sed -e 's/notBefore=//')"
 	SSLValidTo="$(echo "${SSLResult}" | openssl x509 -noout -enddate | sed -e 's/notAfter=//')"
 	SSLProtocol="$(echo "${SSLResult}" | grep "Protocol" | cut -d: -f2 | sed 's/^\ //')"  # SSLProtocol='TLSv1.2'
@@ -168,7 +167,8 @@ function SSLInfo()
 	# TLS 1.3	2018
 	[ "$SSLProtocol" = "TLSv1" -o "$SSLProtocol" = "TLSv1.1" ] && SSLProtocol="$SSLProtocol (old: will be deprecated in 2020)"
 	SSLIssuer="$(echo "${SSLResult}" | openssl x509 -noout -issuer | sed -e 's/issuer= //')"
-	# Is the cert “appropriate”, i.e. does the cert actually cover the name we are looking at?
+	# Is the cert “appropriate”, i.e. does the cert actually cover the name we are looking at? Also look at 
+	# wildcard certs (which are assumed to contain wildcard only in the first position)
 	if [ -n "$(echo "$SSLDNS" | egrep -o "$DNS")" -o -n "$(echo "$SSLDNS" | egrep -o "\*\.$(echo "$DNS" | cut -d. -f2-)")" ]; then
 		SSLAppropriate="t"
 	else
@@ -224,11 +224,13 @@ if [ -z "$OpenSSLToOld" ]; then
 		[ -z "$PortGiven" ] && printf "${ESC}${ItalicFace}mNo port given: SSL-info based on a guess of port \"443\"!!${Reset}\n"
 		if [ "$SSLReturnText" = "Certificate is valid" ]; then 
 			printf "${ESC}${GreenFont}mInfo:           Certificate is valid${Reset}\n"
+		elif [ "$SSLReturnText" = 'certificate has expired (code: 10)' ]; then
+			printf "Info:           ${ESC}${RedFont}mCertificate has expired (code: 10)${Reset}\n"
 		else
 			echo "Info:           ${SSLReturnText}"
 		fi
-		printf "Registered DNS: ${SSLDNS:---no extra DNS names--}"
-		[ -z "$SSLAppropriate" ] && printf "   ${ESC}${RedFont}mNote: this certificate DOES NOT cover \"$DNS\"!${Reset}\n" || printf "\n"
+		echo "Registered DNS: ${SSLDNS:---no extra DNS names--}"
+		[ -z "$SSLAppropriate" ] && printf  "                ${ESC}${RedFont}mNote: this certificate DOES NOT cover \"$DNS\"!${Reset}\n" || printf "\n"
 		echo "Valid from:     $SSLValidFrom"
 		echo "Valid to:       $SSLValidTo"
 		echo "Protocol:       ${SSLProtocol}"
