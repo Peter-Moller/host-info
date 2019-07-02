@@ -200,6 +200,11 @@ function HostInfo()
 	ServerXGenerator="$(echo "$CurlResponse" | grep -i "^x-generator:" | head -1 | cut -d: -f2- | sed -e 's/^\ *//')"  #
 }
 
+# Get the ping time to the host
+function PingTime()
+{
+	PingTimeMS="$(ping -c 1 "$IP" 2>/dev/null | egrep -o "time=[0-9.]* ms" | cut -d= -f2)"
+}
 
 ##################################################
 
@@ -208,14 +213,15 @@ function HostInfo()
 GeoLocate
 [ -z "$OpenSSLToOld" ] && SSLInfo "$IP"
 HostInfo
-
+PingTime
 
 # Print it:
-printf "${ESC}${BlackBack};${WhiteFont}mGeolookup information for:${Reset}${ESC}${WhiteBack};${BlackFont}m $DNS ${Reset}   ${ESC}${BlackBack};${WhiteFont}mDate & time:${ESC}${WhiteBack};${BlackFont}m $(date +%F", "%R) ${Reset}\n"
-echo "     IP: $IP (reverse lookup: \"$(echo ${Reverse:-—})\")"
-echo "Country: ${CountryName:-—}"
-echo "   City: ${City:-—} (region: ${Region:-—})"
-echo "   Org.: $Org"
+printf "${ESC}${BlackBack};${WhiteFont}mHost information for:${Reset}${ESC}${WhiteBack};${BlackFont}m $DNS ${Reset}   ${ESC}${BlackBack};${WhiteFont}mDate & time:${ESC}${WhiteBack};${BlackFont}m $(date +%F", "%R) ${Reset}\n"
+echo "       IP: $IP (reverse lookup: \"$(echo ${Reverse:-—})\")"
+echo "  Country: ${CountryName:-—}"
+echo "     City: ${City:-—} (region: ${Region:-—})"
+echo "     Org.: $Org"
+[ -n "$PingTimeMS" ] && echo "Ping time: $PingTimeMS"
 echo
 if [ -z "$OpenSSLToOld" ]; then
 	# Only continue if the result is valid
