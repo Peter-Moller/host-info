@@ -7,6 +7,7 @@ A bash-script to get various info about a given machine on the internet:
 * Geographic location of the device (country and city)
 * IP-address and reverse lookup (i.e. the DNS name that the IP address represents)
 * Registrar for the device
+* Ping time for the host (lower is better)
 
 The geographic information is retrieved from `ipinfo.io`.
 
@@ -33,7 +34,8 @@ In order for the certificate check to work, you must have a fairly modern versio
 
 ## Usage
 
-You will get the most out of it with a URL. Simply copy it from a web browser and paste in the terminal!
+You will get the most out of it with a URL. Simply copy it from a web browser and paste in the terminal!  
+You may however also enter just a DNS-name or an IP-address.
 
 1. URL: `host-info.sh https://dns.name:port/path`
 2. DNS-name: `host-info.sh dns.name`
