@@ -143,29 +143,32 @@ function SSLInfo()
 	SSLURL=$1
 	SSLResult="$(echo | openssl s_client -connect "${SSLURL}":"$Port" 2>/dev/null)"
 	SSLValid="$?"
-	SSLReturnCode="$(echo "${SSLResult}" | grep "Verify return code:" | cut -d: -f2)"  # SSLReturnCode=' 10 (certificate has expired)'
-	if [ $(echo "$SSLReturnCode" | cut -d\( -f1) -eq 0 ]; then
-		SSLReturnText="Certificate is valid"
-	else
-		SSLReturnText="$(echo "$SSLReturnCode" | cut -d\( -f2 | cut -d\) -f1) (code: $(echo "$SSLReturnCode" | cut -d\( -f1 | sed -e 's/\ //g'))"  # SSLReturnText='certificate has expired (code: 10)'
-	fi
-	SSLDNS="$(echo "${SSLResult}" | openssl x509 -noout -text | grep DNS: | sed -e 's/^\ *//' -e 's/DNS://g')"
-	#SSLDates="$(echo "${SSLResult}" | openssl x509 -noout -dates | sed -e 's/notBefore=/Valid from: /' -e 's/notAfter=/Valid till: /')"
-	SSLValidFrom="$(echo "${SSLResult}" | openssl x509 -noout -startdate | sed -e 's/notBefore=//')"
-	SSLValidTo="$(echo "${SSLResult}" | openssl x509 -noout -enddate | sed -e 's/notAfter=//')"
-	SSLProtocol="$(echo "${SSLResult}" | grep "Protocol" | cut -d: -f2 | sed 's/^\ //')"  # SSLProtocol='TLSv1.2'
-	# Version	Intro.	Phase out
-	# TLS 1.0	1999	Deprecation planned in 2020
-	# TLS 1.1	2006	Deprecation planned in 2020
-	# TLS 1.2	2008
-	# TLS 1.3	2018
-	[ "$SSLProtocol" = "TLSv1" -o "$SSLProtocol" = "TLSv1.1" ] && SSLProtocol="$SSLProtocol (old: will be deprecated in 2020)"
-	SSLIssuer="$(echo "${SSLResult}" | openssl x509 -noout -issuer | sed -e 's/issuer= //')"
-	# Is the cert “appropriate”, i.e. does the cert actually cover the name we are looking at?
-	if [ -n "$(echo "$SSLDNS" | egrep -o "$DNS")" -o -n "$(echo "$SSLDNS" | egrep -o "\*\.$(echo "$DNS" | cut -d. -f2-)")" ]; then
-		SSLAppropriate="t"
-	else
-		SSLAppropriate=""
+	# Do not continue if we dont get a proper result
+	if [ $SSLValid -eq 0 ]; then
+		SSLReturnCode="$(echo "${SSLResult}" | grep "Verify return code:" | cut -d: -f2)"  # SSLReturnCode=' 10 (certificate has expired)'
+		if [ $(echo "$SSLReturnCode" | cut -d\( -f1) -eq 0 ]; then
+			SSLReturnText="Certificate is valid"
+		else
+			SSLReturnText="$(echo "$SSLReturnCode" | cut -d\( -f2 | cut -d\) -f1) (code: $(echo "$SSLReturnCode" | cut -d\( -f1 | sed -e 's/\ //g'))"  # SSLReturnText='certificate has expired (code: 10)'
+		fi
+		SSLDNS="$(echo "${SSLResult}" | openssl x509 -noout -text | grep DNS: | sed -e 's/^\ *//' -e 's/DNS://g')"
+		#SSLDates="$(echo "${SSLResult}" | openssl x509 -noout -dates | sed -e 's/notBefore=/Valid from: /' -e 's/notAfter=/Valid till: /')"
+		SSLValidFrom="$(echo "${SSLResult}" | openssl x509 -noout -startdate | sed -e 's/notBefore=//')"
+		SSLValidTo="$(echo "${SSLResult}" | openssl x509 -noout -enddate | sed -e 's/notAfter=//')"
+		SSLProtocol="$(echo "${SSLResult}" | grep "Protocol" | cut -d: -f2 | sed 's/^\ //')"  # SSLProtocol='TLSv1.2'
+		# Version	Intro.	Phase out
+		# TLS 1.0	1999	Deprecation planned in 2020
+		# TLS 1.1	2006	Deprecation planned in 2020
+		# TLS 1.2	2008
+		# TLS 1.3	2018
+		[ "$SSLProtocol" = "TLSv1" -o "$SSLProtocol" = "TLSv1.1" ] && SSLProtocol="$SSLProtocol (old: will be deprecated in 2020)"
+		SSLIssuer="$(echo "${SSLResult}" | openssl x509 -noout -issuer | sed -e 's/issuer= //')"
+		# Is the cert “appropriate”, i.e. does the cert actually cover the name we are looking at?
+		if [ -n "$(echo "$SSLDNS" | egrep -o "$DNS")" -o -n "$(echo "$SSLDNS" | egrep -o "\*\.$(echo "$DNS" | cut -d. -f2-)")" ]; then
+			SSLAppropriate="t"
+		else
+			SSLAppropriate=""
+		fi
 	fi
 }
 
