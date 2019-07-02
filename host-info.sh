@@ -29,11 +29,13 @@ YellowFont="33"
 BlueFont="34"
 CyanFont="36"
 WhiteFont="37"
-
 # Reset all colors
 BGColor="$RES"
 Face="$RES"
 FontColor="$RES"
+
+# NewLine
+NewLine=$'\n'
 
 function help() {
 	echo "Usage: $(basename $0) URL, DNS-name or IP-address"
@@ -57,8 +59,9 @@ if [ ! -x /usr/bin/dig ]; then
 fi
 
 #
-NameToCheck=$1
-# NameToCheck='https://www.youtube.com/watch?v=98eabjjAEz8'
+Input=$1   # Input='https://www.youtube.com/watch?v=98eabjjAEz8'
+# Make it shorter by removing everything from a question mark and forwards
+NameToCheck="$(echo "$Input" | sed -e 's/\?.*//')"   # NameToCheck='https://www.youtube.com/watch'
 
 # tag fram IP-adressen
 if [ -z "${NameToCheck//[0-9.]/}" ]; then
@@ -176,21 +179,25 @@ function SSLInfo()
 # Get info about host (through 'curl')
 function HostInfo()
 {
+	# If we only have an IP-address or DNS-name, then try http and https
 	if [ "$NameToCheck" = "$IP" -o "$NameToCheck" = "$DNS" ]; then
 		CurlInfoHttps="$(curl --silent --head https://${IP})"
 		CurlInfoHttp="$(curl --silent --head http://${IP})"
+		# Add those together (we can be in a situation where a server responds on both port '80' and '443' and 
+		# the only “sane” (sigh) solution is to deal with both, *ASSUMING* that it's the same server powering both...)
+		CurlResponse="$(echo "${CurlInfoHttp}${NewLine}${CurlInfoHttps}" | egrep -i "^HTTP\/|^server:|^via:|^x-powered-by:|^x-generator:" | sort -u)"
 	else
-		# Frist see if the cert is self signed
+		# See if the cert is self signed (exit code '60' from curl)
 		if curl --silent --head "$NameToCheck"  >&/dev/null; [ "$?" -eq 60 ]; then
 			SSLIssuer="Self signed certificate"
 		fi
 		CurlResponse="$(curl --silent --insecure --head "$NameToCheck" | egrep -i "^HTTP\/|^server:|^via:|^x-powered-by:|^x-generator:")"
-		ServerHTTPver="$(echo "$CurlResponse" | grep "^HTTP" | awk '{print $1}' | sed -e 's;HTTP/;;')"  # ServerHTTPver=1.1
-		ServerServer="$(echo "$CurlResponse" | grep -i "^Server:" | cut -d: -f2- | sed -e 's/^\ *//')"  # ServerServer='Apache/2.4.18 (Ubuntu)'
-		ServerVia="$(echo "$CurlResponse" | grep -i "^Via:" | cut -d: -f2- | sed -e 's/^\ *//')"  # ServerVia='1.1 varnish-v4'
-		ServerXPoweredBy="$(echo "$CurlResponse" | grep -i "^x-powered-by:" | cut -d: -f2- | sed -e 's/^\ *//')"  #
-		ServerXGenerator="$(echo "$CurlResponse" | grep -i "^x-generator:" | cut -d: -f2- | sed -e 's/^\ *//')"  #
 	fi
+	ServerHTTPver="$(echo "$CurlResponse" | grep "^HTTP" | head -1 | awk '{print $1}' | sed -e 's;HTTP/;;')"  # ServerHTTPver=1.1
+	ServerServer="$(echo "$CurlResponse" | grep -i "^Server:" | head -1 | cut -d: -f2- | sed -e 's/^\ *//')"  # ServerServer='Apache/2.4.18 (Ubuntu)'
+	ServerVia="$(echo "$CurlResponse" | grep -i "^Via:" | head -1 | cut -d: -f2- | sed -e 's/^\ *//')"  # ServerVia='1.1 varnish-v4'
+	ServerXPoweredBy="$(echo "$CurlResponse" | grep -i "^x-powered-by:" | head -1 | cut -d: -f2- | sed -e 's/^\ *//')"  #
+	ServerXGenerator="$(echo "$CurlResponse" | grep -i "^x-generator:" | head -1 | cut -d: -f2- | sed -e 's/^\ *//')"  #
 }
 
 
