@@ -27,6 +27,10 @@ If the device is given with a `http` or `https` address, the following is report
 
 The certificate information is retrieved using [openssl](https://www.openssl.org/docs/man1.0.2/man1/) and the server info comes from the [HTTP header](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) and is retrieved with [curl --head](https://curl.haxx.se/docs/manpage.html).
 
+##Requirements
+You must have `curl` and `dig` on your system.  
+In order for the certificate check to work, you must have a fairly modern version of `openssl`. This excludes OS X / macOS up until version 10.12.
+
 ## Usage
 
 You will get the most out of it with a URL. Simply copy it from a web browser and paste in the terminal!

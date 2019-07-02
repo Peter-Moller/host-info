@@ -230,7 +230,7 @@ if [ -z "$OpenSSLToOld" ]; then
 			echo "Info:           ${SSLReturnText}"
 		fi
 		echo "Registered DNS: ${SSLDNS:---no extra DNS names--}"
-		[ -z "$SSLAppropriate" ] && printf  "                ${ESC}${RedFont}mNote: this certificate DOES NOT cover \"$DNS\"!${Reset}\n" || printf "\n"
+		[ -z "$SSLAppropriate" ] && printf  "                ${ESC}${RedFont}mNote: this certificate DOES NOT cover \"$DNS\"!${Reset}\n"
 		echo "Valid from:     $SSLValidFrom"
 		echo "Valid to:       $SSLValidTo"
 		echo "Protocol:       ${SSLProtocol}"
