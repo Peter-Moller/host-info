@@ -75,8 +75,13 @@ else
 		exit 1
 	fi
 	# Omvandla DNS-namn till IP-nummer:
-	IP="$(/usr/bin/dig +search +short $DNS | tail -1)"
-	# IP=80.239.174.87
+	IP="$(/usr/bin/dig +search +short $DNS | tail -1)"	# IP=80.239.174.87
+	# Exit if the DNS doesn't have an IP-number
+	if [ -z "$IP" ]; then
+		echo "Problem: \"$DNS\" doesn't have an IP-address!"
+		echo "Exiting now..."
+		exit 1
+	fi
 fi
 
 # Find out what port is being used
