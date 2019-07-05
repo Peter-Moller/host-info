@@ -35,6 +35,10 @@ FontColor="$RES"
 
 # NewLine
 NewLine=$'\n'
+# F1 & F2 is the format string for printf
+F1="%-18s"
+F2="%-60s"
+Color=""
 
 function help() {
 	echo "Usage: $(basename $0) URL, DNS-name or IP-address"
@@ -198,13 +202,13 @@ function HostInfo()
 		if curl --silent --head "$NameToCheck"  >&/dev/null; [ "$?" -eq 60 ]; then
 			SSLIssuer="Self signed certificate"
 		fi
-		CurlResponse="$(curl --silent --insecure --head "$NameToCheck" | egrep -i "^HTTP\/|^server:|^via:|^x-powered-by:|^x-generator:")"
+		CurlResponse="$(curl --silent --insecure --head "${NameToCheck}" | egrep -i "^HTTP\/|^server:|^via:|^x-powered-by:|^x-generator:")"
 	fi
-	ServerHTTPver="$(echo "$CurlResponse" | grep "^HTTP" | head -1 | awk '{print $1}' | sed -e 's;HTTP/;;')"  # ServerHTTPver=1.1
-	ServerServer="$(echo "$CurlResponse" | grep -i "^Server:" | head -1 | cut -d: -f2- | sed -e 's/^\ *//')"  # ServerServer='Apache/2.4.18 (Ubuntu)'
-	ServerVia="$(echo "$CurlResponse" | grep -i "^Via:" | head -1 | cut -d: -f2- | sed -e 's/^\ *//')"  # ServerVia='1.1 varnish-v4'
-	ServerXPoweredBy="$(echo "$CurlResponse" | grep -i "^x-powered-by:" | head -1 | cut -d: -f2- | sed -e 's/^\ *//')"  #
-	ServerXGenerator="$(echo "$CurlResponse" | grep -i "^x-generator:" | head -1 | cut -d: -f2- | sed -e 's/^\ *//')"  #
+	ServerHTTPver="$(echo "$CurlResponse" | grep "^HTTP" | head -1 | awk '{print $1}' | sed -e 's;HTTP/;;' | tr -d '\r')"  # ServerHTTPver=1.1
+	ServerServer="$(echo "$CurlResponse" | grep -i "^Server:" | head -1 | cut -d: -f2- | sed -e 's/^\ *//' | tr -d '\r')"  # ServerServer='Apache/2.4.18 (Ubuntu)'
+	ServerVia="$(echo "$CurlResponse" | grep -i "^Via:" | head -1 | cut -d: -f2- | sed -e 's/^\ *//' | tr -d '\r')"  # ServerVia='1.1 varnish-v4'
+	ServerXPoweredBy="$(echo "$CurlResponse" | grep -i "^x-powered-by:" | head -1 | cut -d: -f2- | sed -e 's/^\ *//' | tr -d '\r')"  #
+	ServerXGenerator="$(echo "$CurlResponse" | grep -i "^x-generator:" | head -1 | cut -d: -f2- | sed -e 's/^\ *//' | tr -d '\r')"  #
 }
 
 # Get the ping time to the host
@@ -213,23 +217,43 @@ function PingTime()
 	PingTimeMS="$(ping -c 1 "$IP" 2>/dev/null | egrep -o "time=[0-9.]* ms" | cut -d= -f2)"
 }
 
+# Get the names for the certificate attributes
+GetText()
+{
+	case "$CertAttribute" in
+		CN)     CertAttributeText="Common name";;
+		E)      CertAttributeText="Email";;
+		T)      CertAttributeText="Locality";;
+		ST)     CertAttributeText="State";;
+		O)      CertAttributeText="Organization";;
+		OU)     CertAttributeText="Org.unit";;
+		C)      CertAttributeText="Country";;
+		L)		CertAttributeText="Locality";;
+		STREET) CertAttributeText="Street addr.";;
+		ALL)    CertAttributeText="Complete name";;
+	esac
+}
+
 ##################################################
 
 # START OF ACTUAL WORK
 
+printf "Gathering data, please wait..."
 GeoLocate
 [ -z "$OpenSSLToOld" ] && SSLInfo "$IP"
 HostInfo
 PingTime
+printf "\033[2K\n"
 
 # Print it:
 printf "${ESC}${BlackBack};${WhiteFont}mHost information for:${Reset}${ESC}${WhiteBack};${BlackFont}m $DNS ${Reset}   ${ESC}${BlackBack};${WhiteFont}mDate & time:${ESC}${WhiteBack};${BlackFont}m $(date +%F", "%R) ${Reset}\n"
 printf "${ESC}${BoldFace};${UnderlineFace}mHost info:${Reset}\n"
-echo "IP:             $IP (reverse lookup: \"$(echo ${Reverse:-—})\")"
-echo "Country:        ${CountryName:-—}"
-echo "City:           ${City:-—} (region: ${Region:-—})"
-echo "Org.:           $Org"
-[ -n "$PingTimeMS" ] && echo "Ping time:      $PingTimeMS"
+printf "${F1}${F2}\n" "IP:" "$IP (reverse lookup: \"$(echo ${Reverse:-—})\")"
+printf "${F1}${F2}\n" "Country:" "${CountryName:-—}"
+printf "${F1}${F2}\n" "City:" "${City:-—} (region: ${Region:-—})"
+printf "${F1}${F2}\n" "Org.:" "$Org"
+#[ -n "$PingTimeMS" ] && printf "${F1}${F2}\n" "Ping time:" "$PingTimeMS"
+printf "${F1}${F2}\n" "Ping time:" "${PingTimeMS:---no answer--}"
 echo
 if [ -z "$OpenSSLToOld" ]; then
 	# Only continue if the result is valid
@@ -237,18 +261,36 @@ if [ -z "$OpenSSLToOld" ]; then
 		printf "${ESC}${BoldFace};${UnderlineFace}mCertificate info:${Reset}\n"
 		[ -z "$PortGiven" ] && printf "${ESC}${ItalicFace}mNo port given: SSL-info based on a guess of port \"443\"!!${Reset}\n"
 		if [ "$SSLReturnText" = "Certificate is valid" ]; then 
-			printf "${ESC}${GreenFont}mInfo:           Certificate is valid${Reset}\n"
+			Color="${ESC}${GreenFont}m"
+			printf "${F1}${Color}${F2}${Reset}\n" "Info:" "Certificate is valid"
 		elif [ "$SSLReturnText" = 'certificate has expired (code: 10)' ]; then
-			printf "Info:           ${ESC}${RedFont}mCertificate has expired (code: 10)${Reset}\n"
+			Color="${ESC}${RedFont}m"
+			printf "${F1}${Color}${F2}${Reset}\n" "Info:" "Certificate has expired (code: 10)"
 		else
-			echo "Info:           ${SSLReturnText}"
+			printf "${F1}${Color}${F2}\n" "Info:" "${SSLReturnText}"
 		fi
-		echo "Registered DNS: ${SSLDNS:---no extra DNS names--}"
-		[ -z "$SSLAppropriate" ] && printf  "                ${ESC}${RedFont}mNote: this certificate DOES NOT cover \"$DNS\"!${Reset}\n"
-		echo "Valid from:     $SSLValidFrom"
-		echo "Valid to:       $SSLValidTo"
-		echo "Protocol:       ${SSLProtocol}"
-		echo "Issuer:         ${SSLIssuer}"
+		printf "${F1}${F2}\n" "Registered DNS:" "${SSLDNS:---no extra DNS names--}"
+		[ -z "$SSLAppropriate" ] && printf  "${F1}${ESC}${RedFont}m${F2}${Reset}\n" "" "Note: this certificate DOES NOT cover \"$DNS\"!"
+		printf "${F1}${F2}\n" "Valid from:" "$SSLValidFrom"
+		printf "${F1}${F2}\n" "Valid to:" "$SSLValidTo"
+		printf "${F1}${F2}\n" "Protocol:" "${SSLProtocol}"
+		printf "${F1}${F2}\n" "Issuer:" "${SSLIssuer}"
+		printf "${ESC}${ItalicFace}mAbove information dissected for clarity:${Reset}\n"
+		SSLIssuerString="$(echo "$SSLIssuer" | sed -e 's;^/;;' | tr '/' '\n')"
+		# C=NL
+		# ST=Noord-Holland
+		# L=Amsterdam
+		# O=TERENA
+		# CN=TERENA SSL CA 3
+		OldIFS=$IFS
+		IFS==
+		echo "$SSLIssuerString" | while read -r CertAttribute CertAttributeValue
+		do
+			# echo "Short: \"$Short\"; Long: \"$Long\""
+		 	GetText
+		 	printf "${F1}${F2}\n" " - ${CertAttributeText}:" "${CertAttributeValue}"
+		done
+		IFS=$OldIFS
 	fi
 else
 	echo "OpenSSL is too old (version: $(openssl version 2>/dev/null | sed -e 's/OpenSSL //')) to test certificates. Upgrade OpenSSL or use a more modern OS!"
@@ -256,9 +298,9 @@ fi
 if [ -n "$CurlResponse" ]; then
 	echo
 	printf "${ESC}${BoldFace};${UnderlineFace}mServer info:${Reset}\n"
-	[ -z "$ServerServer" ] || echo "Server:         ${ServerServer}"
-	[ -z "$ServerHTTPver" ] || echo "HTTP-version:   ${ServerHTTPver}"
-	[ -z "$ServerVia" ] || echo "Via:            ${ServerVia}"
-	[ -z "$ServerXPoweredBy" ] || echo "X-Powered-By:   ${ServerXPoweredBy}"
-	[ -z "$ServerXGenerator" ] || echo "X-Generator:    ${ServerXGenerator}"
+	[ -z "$ServerServer" ] || printf "${F1}${F2}\n" "Server:" "${ServerServer}"
+	[ -z "$ServerHTTPver" ] || printf "${F1}${F2}\n" "HTTP-version:" "${ServerHTTPver}"
+	[ -z "$ServerVia" ] || printf "${F1}${F2}\n" "Via:" "${ServerVia}"
+	[ -z "$ServerXPoweredBy" ] || printf "${F1}${F2}\n" "X-Powered-By:" "${ServerXPoweredBy}"
+	[ -z "$ServerXGenerator" ] || printf "${F1}${F2}\n" "X-Generator:" "${ServerXGenerator}"
 fi
