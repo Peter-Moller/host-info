@@ -275,22 +275,24 @@ if [ -z "$OpenSSLToOld" ]; then
 		printf "${F1}${F2}\n" "Valid to:" "$SSLValidTo"
 		printf "${F1}${F2}\n" "Protocol:" "${SSLProtocol}"
 		printf "${F1}${F2}\n" "Issuer:" "${SSLIssuer}"
-		printf "${ESC}${ItalicFace}mAbove information dissected for clarity:${Reset}\n"
-		SSLIssuerString="$(echo "$SSLIssuer" | sed -e 's;^/;;' | tr '/' '\n')"
-		# C=NL
-		# ST=Noord-Holland
-		# L=Amsterdam
-		# O=TERENA
-		# CN=TERENA SSL CA 3
-		OldIFS=$IFS
-		IFS==
-		echo "$SSLIssuerString" | while read -r CertAttribute CertAttributeValue
-		do
-			# echo "Short: \"$Short\"; Long: \"$Long\""
-		 	GetText
-		 	printf "${F1}${F2}\n" " - ${CertAttributeText}:" "${CertAttributeValue}"
-		done
-		IFS=$OldIFS
+		if [ ! "$SSLIssuer" = "Self signed certificate" ]; then
+			printf "${ESC}${ItalicFace}mAbove information dissected for clarity:${Reset}\n"
+			SSLIssuerString="$(echo "$SSLIssuer" | sed -e 's;^/;;' | tr '/' '\n')"
+			# C=NL
+			# ST=Noord-Holland
+			# L=Amsterdam
+			# O=TERENA
+			# CN=TERENA SSL CA 3
+			OldIFS=$IFS
+			IFS==
+			echo "$SSLIssuerString" | while read -r CertAttribute CertAttributeValue
+			do
+				# echo "Short: \"$Short\"; Long: \"$Long\""
+			 	GetText
+			 	printf "${F1}${F2}\n" " - ${CertAttributeText}:" "${CertAttributeValue}"
+			done
+			IFS=$OldIFS
+		fi
 	fi
 else
 	echo "OpenSSL is too old (version: $(openssl version 2>/dev/null | sed -e 's/OpenSSL //')) to test certificates. Upgrade OpenSSL or use a more modern OS!"
