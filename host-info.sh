@@ -276,7 +276,7 @@ if [ -z "$OpenSSLToOld" ]; then
 		printf "${F1}${F2}\n" "Protocol:" "${SSLProtocol}"
 		printf "${F1}${F2}\n" "Issuer:" "${SSLIssuer}"
 		if [ ! "$SSLIssuer" = "Self signed certificate" ]; then
-			printf "${ESC}${ItalicFace}mAbove information dissected for clarity:${Reset}\n"
+			printf "${ESC}${ItalicFace}mIssuer information dissected for clarity:${Reset}\n"
 			SSLIssuerString="$(echo "$SSLIssuer" | sed -e 's;^/;;' | tr '/' '\n')"
 			# C=NL
 			# ST=Noord-Holland
