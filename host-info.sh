@@ -88,18 +88,16 @@ else
 	fi
 fi
 
-# Find out what port is being used
-Port="$(echo "$NameToCheck" | sed -e 's;https*://;;g' -e 's;/.*;;g' | cut -d: -f2 | grep -o "[0-9]*")"
+# Find out what port is being used. First eliminate everything but the DNS and an optional port number
+PortTemp="$(echo "$NameToCheck" | sed -e 's;https*://;;g' -e 's;/.*;;g')"
+# If there is a colon, get the port number
+[ -n "$(echo "$PortTemp" | egrep -o ":")" ] && Port="$(echo $PortTemp | cut -d: -f2)"
 # If no port given, see if the 'https' is specified. If so, $PortGiven indicates that
 # Note: 'http://' does *NOT* have to mean no TLS!
 if [ -z "$Port" ]; then
-	if [ -n "$(echo "$NameToCheck" | grep -o "https://")" ]; then
-		PortGiven="t"
-		Port=443
-	else
-		PortGiven=""
-		Port=443
-	fi
+	[ -n "$(echo "$NameToCheck" | grep -o "https://")" ] && PortGiven="t" || PortGiven=""
+	# Assume port 443
+	Port=443
 else
 	PortGiven="t"
 fi
@@ -167,6 +165,7 @@ function SSLInfo()
 			SSLReturnText="$(echo "$SSLReturnCode" | cut -d\( -f2 | cut -d\) -f1) (code: $(echo "$SSLReturnCode" | cut -d\( -f1 | sed -e 's/\ //g'))"  # SSLReturnText='certificate has expired (code: 10)'
 		fi
 		SSLDNS="$(echo "${SSLResult}" | openssl x509 -noout -text | grep DNS: | sed -e 's/^\ *//' -e 's/DNS://g')"
+		SSLNrDNS="$(echo "$SSLDNS" | wc -w | awk '{print $1}')"
 		SSLValidFrom="$(echo "${SSLResult}" | openssl x509 -noout -startdate | sed -e 's/notBefore=//')"
 		SSLValidTo="$(echo "${SSLResult}" | openssl x509 -noout -enddate | sed -e 's/notAfter=//')"
 		SSLProtocol="$(echo "${SSLResult}" | grep "Protocol" | cut -d: -f2 | sed 's/^\ //')"  # SSLProtocol='TLSv1.2'
@@ -269,7 +268,7 @@ if [ -z "$OpenSSLToOld" ]; then
 		else
 			printf "${F1}${Color}${F2}\n" "Info:" "${SSLReturnText}"
 		fi
-		printf "${F1}${F2}\n" "Registered DNS:" "${SSLDNS:---no extra DNS names--}"
+		printf "${F1}${F2}\n" "${SSLNrDNS} registered DNS:" "${SSLDNS:---no extra DNS names--}"
 		[ -z "$SSLAppropriate" ] && printf  "${F1}${ESC}${RedFont}m${F2}${Reset}\n" "" "Note: this certificate DOES NOT cover \"$DNS\"!"
 		printf "${F1}${F2}\n" "Valid from:" "$SSLValidFrom"
 		printf "${F1}${F2}\n" "Valid to:" "$SSLValidTo"
