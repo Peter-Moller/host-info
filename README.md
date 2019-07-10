@@ -2,7 +2,7 @@
 
 ## About the script
 
-A bash-script to get various info about a given machine on the internet:
+A bash-script for macOS, Linux and Windows (with WSL) to get various info about a given machine on the internet:
 
 * Geographic location of the device (country and city)
 * IP-address and reverse lookup (i.e. the DNS name that the IP address represents)
