@@ -113,8 +113,8 @@ OutFile="/tmp/${IP}.json"
 # Find out where the device is
 function GeoLocate()
 {
-	# Hämta geolookupen
-	curl -s -f -o "$OutFile" "$GeoLookupURL/$IP"
+	# Get the goeinfo data, but only if we don't already have it (and it's less than a day old)
+	[ -z "$(find "$OutFile" -mtime -1d 2>/dev/null)" ] && curl -s -f -o "$OutFile" "$GeoLookupURL/$IP"
 	# Exempel:
 	# {
 	#   "ip": "46.30.211.34",
