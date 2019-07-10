@@ -36,7 +36,7 @@ FontColor="$RES"
 # NewLine
 NewLine=$'\n'
 # F1 & F2 is the format string for printf
-F1="%-18s"
+F1="%-20s"
 F2="%-60s"
 Color=""
 
@@ -66,19 +66,19 @@ Input=$1   # Input='https://www.youtube.com/watch?v=98eabjjAEz8'
 # Make it shorter by removing everything from a question mark and forwards
 NameToCheck="$(echo "$Input" | sed -e 's/\?.*//')"   # NameToCheck='https://www.youtube.com/watch'
 
-# tag fram IP-adressen
+# Get the IP address
 if [ -z "${NameToCheck//[0-9.]/}" ]; then
 	IP=$NameToCheck
 else
-	# Gräv ut DNS-biten av URL:en
-	DNS="$(echo "$NameToCheck" | sed -e 's;https*://;;g' -e 's;/.*;;g' -e 's/:[0-9]*//')"
-	# DNS=www.youtube.com
+	# Getr the DNS part of the URL
+	DNS="$(echo "$NameToCheck" | sed -e 's;https*://;;g' -e 's;/.*;;g' -e 's/:[0-9]*//')"   # DNS=www.youtube.com
+	# Check to see that the DNS name doesn't contain a wildcard
 	if [ -n "$(echo "$DNS" | egrep -o '\*')" ]; then
 		echo "Can NOT use a wildcard for input!"
 		echo "Will exit now..."
 		exit 1
 	fi
-	# Omvandla DNS-namn till IP-nummer:
+	# Get the IP address from the DNS name
 	IP="$(/usr/bin/dig +search +short $DNS | tail -1)"	# IP=80.239.174.87
 	# Exit if the DNS doesn't have an IP-number
 	if [ -z "$IP" ]; then
@@ -152,9 +152,13 @@ function GeoLocate()
 # Get certificate information (if possible)
 function SSLInfo()
 {
-	# SSLURL must be eithe a DNS-name or an IP-address *without* anything before or after!
-	SSLURL=$1
-	SSLResult="$(echo | openssl s_client -connect "${SSLURL}":"$Port" 2>/dev/null)"
+	# SSLURL must be eithe a DNS-name or an IP-address
+	if [ -n "$DNS" ]; then
+		SSLResult="$(echo | openssl s_client -connect "${DNS}":"$Port" -servername "${DNS}" 2>/dev/null)"
+	else
+		SSLResult="$(echo | openssl s_client -connect "${IP}":"$Port" 2>/dev/null)"
+	fi
+	
 	SSLValid="$?"
 	# If we don't have a good result, there's no need to continue (won't do it in the prentout either)
 	if [ $SSLValid -eq 0 ]; then
@@ -168,6 +172,8 @@ function SSLInfo()
 		SSLNrDNS="$(echo "$SSLDNS" | wc -w | awk '{print $1}')"
 		SSLValidFrom="$(echo "${SSLResult}" | openssl x509 -noout -startdate | sed -e 's/notBefore=//')"
 		SSLValidTo="$(echo "${SSLResult}" | openssl x509 -noout -enddate | sed -e 's/notAfter=//')"
+		SSLBits="$(echo "${SSLResult}" | openssl x509 -noout -text | grep -i "Public-Key:" | cut -d\( -f2 | awk '{print $1}')"
+		SSLSignAlgoritm="$(echo "${SSLResult}" | openssl x509 -noout -text | grep -i "Signature Algorithm" | sort -u | cut -d: -f2 | sed 's/^ //')"
 		SSLProtocol="$(echo "${SSLResult}" | grep "Protocol" | cut -d: -f2 | sed 's/^\ //')"  # SSLProtocol='TLSv1.2'
 		# Version	Intro.	Phase out
 		# TLS 1.0	1999	Deprecation planned in 2020
@@ -217,7 +223,7 @@ function PingTime()
 }
 
 # Get the names for the certificate attributes
-GetText()
+GetSSLCertAttribExplain()
 {
 	case "$CertAttribute" in
 		CN)     CertAttributeText="Common name";;
@@ -233,13 +239,31 @@ GetText()
 	esac
 }
 
+GetSecureAlgoritmExplain()
+{
+	case "$SSLSignAlgoritm" in
+		rsaEncryption)				SSLSignAlgoritmText="Rivest, Shamir and Adleman (RSA) encryption (and signing)";;
+		md2WithRSAEncryption)		SSLSignAlgoritmText="Message Digest 2 (MD2) checksum with Rivest, Shamir and Adleman (RSA) encryption";;
+		md4withRSAEncryption)		SSLSignAlgoritmText="Message Digest 4 (MD4) checksum with Rivest, Shamir and Adleman (RSA) encryption";;
+		md5WithRSAEncryption)		SSLSignAlgoritmText="Rivest, Shamir and Adleman (RSA) encryption with Message Digest 5 (MD5) signature";;
+		sha1-with-rsa-signature)	SSLSignAlgoritmText="Rivest, Shamir and Adleman (RSA) with Secure Hash Algorithm (SHA-1) signature";;
+		rsaOAEPEncryptionSET)		SSLSignAlgoritmText="Rivest, Shamir and Adleman (RSA) Optimal Asymmetric Encryption Padding (OAEP) encryption set";;
+		id-RSAES-OAEP)				SSLSignAlgoritmText="Public-key encryption scheme combining Optimal Asymmetric Encryption Padding (OAEP) with the Rivest, Shamir and Adleman Encry...";;
+		id-mgf1)					SSLSignAlgoritmText="Rivest, Shamir and Adleman (RSA) algorithm that uses the Mask Generator Function 1 (MGF1)";;
+		id-pSpecified)				SSLSignAlgoritmText="Rivest, Shamir and Adleman (RSA) algorithm (szOID_RSA_PSPECIFIED)";;
+		rsassa-pss)					SSLSignAlgoritmText="Rivest, Shamir, Adleman (RSA) Signature Scheme with Appendix - Probabilistic Signature Scheme (RSASSA-PSS)";;
+		sha384WithRSAEncryption)	SSLSignAlgoritmText="Secure Hash Algorithm 384 (SHA384) with Rivest, Shamir and Adleman (RSA) Encryption";;
+		sha512WithRSAEncryption)	SSLSignAlgoritmText="Secure Hash Algorithm (SHA) 512 with Rivest, Shamir and Adleman (RSA) encryption";;
+		sha256WithRSAEncryption)	SSLSignAlgoritmText="Secure Hash Algorithm 256 (SHA256) with Rivest, Shamir and Adleman (RSA) encryption";;
+	esac
+}
 ##################################################
 
 # START OF ACTUAL WORK
 
 printf "Gathering data, please wait..."
 GeoLocate
-[ -z "$OpenSSLToOld" ] && SSLInfo "$IP"
+[ -z "$OpenSSLToOld" ] && SSLInfo
 HostInfo
 PingTime
 printf "\033[2K\n"
@@ -273,6 +297,9 @@ if [ -z "$OpenSSLToOld" ]; then
 		printf "${F1}${F2}\n" "Valid from:" "$SSLValidFrom"
 		printf "${F1}${F2}\n" "Valid to:" "$SSLValidTo"
 		printf "${F1}${F2}\n" "Protocol:" "${SSLProtocol}"
+		printf "${F1}${F2}\n" "Bits:" "${SSLBits}"
+		GetSecureAlgoritmExplain
+		printf "${F1}${F2}\n" "Signature algoritm:" "${SSLSignAlgoritm}  (“${SSLSignAlgoritmText:--No explanaination for this algoritm-}”)"
 		printf "${F1}${F2}\n" "Issuer:" "${SSLIssuer}"
 		if [ ! "$SSLIssuer" = "Self signed certificate" ]; then
 			printf "${ESC}${ItalicFace}mIssuer information dissected for clarity:${Reset}\n"
@@ -287,7 +314,7 @@ if [ -z "$OpenSSLToOld" ]; then
 			echo "$SSLIssuerString" | while read -r CertAttribute CertAttributeValue
 			do
 				# echo "Short: \"$Short\"; Long: \"$Long\""
-			 	GetText
+			 	GetSSLCertAttribExplain
 			 	printf "${F1}${F2}\n" " - ${CertAttributeText}:" "${CertAttributeValue}"
 			done
 			IFS=$OldIFS
