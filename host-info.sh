@@ -40,6 +40,14 @@ F1="%-20s"
 F2="%-60s"
 Color=""
 
+# Use the correct time format for Darwin and Linux
+OS="$(uname -s)"
+if [ "$OS" = "Darwin" ]; then
+	MTime1d="-mtime -1d"
+elif [ "$OS" = "Linux" ]; then
+	MTime1d="-mtime -1"
+fi
+
 function help() {
 	echo "Usage: $(basename $0) URL, DNS-name or IP-address"
 	echo "Enter a URL, a DNS-name or an IP-address to get it resolved"
@@ -117,7 +125,7 @@ CertificateFile="/tmp/${IP}.certificate"
 function GeoLocate()
 {
 	# Get the goeinfo data, but only if we don't already have it (and it's less than a day old)
-	[ -z "$(find "$GeoLocateFile" -mtime -1d 2>/dev/null)" ] && curl -s -f -o "$GeoLocateFile" "$GeoLookupURL/$IP"
+	[ -z "$(find "$GeoLocateFile" ${MTime1d} 2>/dev/null)" ] && curl -s -f -o "$GeoLocateFile" "$GeoLookupURL/$IP"
 	# Exempel:
 	# {
 	#   "ip": "46.30.211.34",
@@ -140,7 +148,9 @@ function GeoLocate()
 	Region="$(grep '"region"' "$GeoLocateFile" 2>/dev/null | awk -F\" '{print $4}')"
 	#Org="$(less $GeoLocateFile | python -c "import json,sys;obj=json.load(sys.stdin);print obj['org'].encode('utf-8');" | cut -d' ' -f2-)"
 	Org="$(grep '"org"' "$GeoLocateFile" 2>/dev/null | awk -F\" '{print $4}')"
-	# Org='Telia Company AB'
+	# Org='AS1299 Telia Company AB'
+	ASHandle="$(echo "$Org" | awk '{print $1}')"
+	# ASHandle='AS1299'
 
 	# Hämta Landslistan om den inte finns
 	[[ -f "$CountriesFile" ]] || curl -s -f -o "$CountriesFile" "$CountriesURL" 2>/dev/null
@@ -156,10 +166,13 @@ function GeoLocate()
 function SSLInfo()
 {
 	# SSLURL must be eithe a DNS-name or an IP-address
-	if [ -n "$DNS" ]; then
-		echo | openssl s_client -connect "${DNS}":"$Port" -servername "${DNS}" 2>/dev/null > "$CertificateFile"
-	else
-		echo | openssl s_client -connect "${IP}":"$Port" 2>/dev/null > "$CertificateFile"
+	# Use the stored one if its newer than one day
+	if [ -z "$(find "$CertificateFile" ${MTime1d} 2>/dev/null)" ]; then
+		if [ -n "$DNS" ]; then
+			echo | openssl s_client -connect "${DNS}":"$Port" -servername "${DNS}" 2>/dev/null > "$CertificateFile"
+		else
+			echo | openssl s_client -connect "${IP}":"$Port" 2>/dev/null > "$CertificateFile"
+		fi
 	fi
 	
 	SSLValid="$?"
@@ -274,7 +287,7 @@ printf "${ESC}${BoldFace};${UnderlineFace}mHost info:${Reset}\n"
 printf "${F1}${F2}\n" "IP:" "$IP (reverse lookup: \"$(echo ${Reverse:-—})\")"
 printf "${F1}${F2}\n" "Country:" "${CountryName:-—}"
 printf "${F1}${F2}\n" "City:" "${City:-—} (region: ${Region:-—})"
-printf "${F1}${F2}\n" "Org.:" "$Org"
+printf "${F1}${F2}\n" "Org.:" "$Org  (See: \"https://ipinfo.io/$ASHandle\" for more info)"
 #[ -n "$PingTimeMS" ] && printf "${F1}${F2}\n" "Ping time:" "$PingTimeMS"
 printf "${F1}${F2}\n" "Ping time:" "${PingTimeMS:---no answer--}"
 echo
