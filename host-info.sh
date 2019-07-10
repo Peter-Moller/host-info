@@ -107,14 +107,17 @@ fi
 OpenSSLToOld="$(openssl version | egrep -o "0.9.8")"   # OpenSSLToOld='0.9.8'
 
 # Where to store the GeoLookup-data
-OutFile="/tmp/${IP}.json"
+GeoLocateFile="/tmp/${IP}.json"
+
+# Where to store the certificate information
+CertificateFile="/tmp/${IP}.certificate"
 
 
 # Find out where the device is
 function GeoLocate()
 {
 	# Get the goeinfo data, but only if we don't already have it (and it's less than a day old)
-	[ -z "$(find "$OutFile" -mtime -1d 2>/dev/null)" ] && curl -s -f -o "$OutFile" "$GeoLookupURL/$IP"
+	[ -z "$(find "$GeoLocateFile" -mtime -1d 2>/dev/null)" ] && curl -s -f -o "$GeoLocateFile" "$GeoLookupURL/$IP"
 	# Exempel:
 	# {
 	#   "ip": "46.30.211.34",
@@ -127,16 +130,16 @@ function GeoLocate()
 	# }
 
 	# Gräv ut information ur json-filen:
-	#City="$(less $OutFile | python -c "import json,sys;obj=json.load(sys.stdin);print obj['city'].encode('utf-8');")"
-	City="$(grep '"city"' "$OutFile" 2>/dev/null | awk -F\" '{print $4}')"
+	#City="$(less $GeoLocateFile | python -c "import json,sys;obj=json.load(sys.stdin);print obj['city'].encode('utf-8');")"
+	City="$(grep '"city"' "$GeoLocateFile" 2>/dev/null | awk -F\" '{print $4}')"
 	# City=Copenhagen
-	#CountryShort="$(less $OutFile | python -c "import json,sys;obj=json.load(sys.stdin);print obj['country'].encode('utf-8');")"
-	CountryShort="$(grep '"country"' "$OutFile" 2>/dev/null | awk -F\" '{print $4}')"
+	#CountryShort="$(less $GeoLocateFile | python -c "import json,sys;obj=json.load(sys.stdin);print obj['country'].encode('utf-8');")"
+	CountryShort="$(grep '"country"' "$GeoLocateFile" 2>/dev/null | awk -F\" '{print $4}')"
 	# CountryShort=DK
-	#Region="$(less $OutFile | python -c "import json,sys;obj=json.load(sys.stdin);print obj['region'].encode('utf-8');")"
-	Region="$(grep '"region"' "$OutFile" 2>/dev/null | awk -F\" '{print $4}')"
-	#Org="$(less $OutFile | python -c "import json,sys;obj=json.load(sys.stdin);print obj['org'].encode('utf-8');" | cut -d' ' -f2-)"
-	Org="$(grep '"org"' "$OutFile" 2>/dev/null | awk -F\" '{print $4}')"
+	#Region="$(less $GeoLocateFile | python -c "import json,sys;obj=json.load(sys.stdin);print obj['region'].encode('utf-8');")"
+	Region="$(grep '"region"' "$GeoLocateFile" 2>/dev/null | awk -F\" '{print $4}')"
+	#Org="$(less $GeoLocateFile | python -c "import json,sys;obj=json.load(sys.stdin);print obj['org'].encode('utf-8');" | cut -d' ' -f2-)"
+	Org="$(grep '"org"' "$GeoLocateFile" 2>/dev/null | awk -F\" '{print $4}')"
 	# Org='Telia Company AB'
 
 	# Hämta Landslistan om den inte finns
@@ -154,34 +157,49 @@ function SSLInfo()
 {
 	# SSLURL must be eithe a DNS-name or an IP-address
 	if [ -n "$DNS" ]; then
-		SSLResult="$(echo | openssl s_client -connect "${DNS}":"$Port" -servername "${DNS}" 2>/dev/null)"
+		echo | openssl s_client -connect "${DNS}":"$Port" -servername "${DNS}" 2>/dev/null > "$CertificateFile"
 	else
-		SSLResult="$(echo | openssl s_client -connect "${IP}":"$Port" 2>/dev/null)"
+		echo | openssl s_client -connect "${IP}":"$Port" 2>/dev/null > "$CertificateFile"
 	fi
 	
 	SSLValid="$?"
 	# If we don't have a good result, there's no need to continue (won't do it in the prentout either)
 	if [ $SSLValid -eq 0 ]; then
-		SSLReturnCode="$(echo "${SSLResult}" | grep "Verify return code:" | cut -d: -f2)"  # SSLReturnCode=' 10 (certificate has expired)'
+		SSLReturnCode="$(grep "Verify return code:" "$CertificateFile" | cut -d: -f2)"  # SSLReturnCode=' 10 (certificate has expired)'
 		if [ $(echo "$SSLReturnCode" | cut -d\( -f1) -eq 0 ]; then
 			SSLReturnText="Certificate is valid"
 		else
 			SSLReturnText="$(echo "$SSLReturnCode" | cut -d\( -f2 | cut -d\) -f1) (code: $(echo "$SSLReturnCode" | cut -d\( -f1 | sed -e 's/\ //g'))"  # SSLReturnText='certificate has expired (code: 10)'
 		fi
-		SSLDNS="$(echo "${SSLResult}" | openssl x509 -noout -text | grep DNS: | sed -e 's/^\ *//' -e 's/DNS://g')"
+		SSLDNS="$(less "$CertificateFile" | openssl x509 -noout -text | grep DNS: | sed -e 's/^\ *//' -e 's/DNS://g')"
 		SSLNrDNS="$(echo "$SSLDNS" | wc -w | awk '{print $1}')"
-		SSLValidFrom="$(echo "${SSLResult}" | openssl x509 -noout -startdate | sed -e 's/notBefore=//')"
-		SSLValidTo="$(echo "${SSLResult}" | openssl x509 -noout -enddate | sed -e 's/notAfter=//')"
-		SSLBits="$(echo "${SSLResult}" | openssl x509 -noout -text | grep -i "Public-Key:" | cut -d\( -f2 | awk '{print $1}')"
-		SSLSignAlgoritm="$(echo "${SSLResult}" | openssl x509 -noout -text | grep -i "Signature Algorithm" | sort -u | cut -d: -f2 | sed 's/^ //')"
-		SSLProtocol="$(echo "${SSLResult}" | grep "Protocol" | cut -d: -f2 | sed 's/^\ //')"  # SSLProtocol='TLSv1.2'
+		SSLValidFrom="$(less "$CertificateFile" | openssl x509 -noout -startdate | sed -e 's/notBefore=//')"
+		SSLValidTo="$(less "$CertificateFile" | openssl x509 -noout -enddate | sed -e 's/notAfter=//')"
+		SSLBits="$(less "$CertificateFile" | openssl x509 -noout -text | grep -i "Public-Key:" | cut -d\( -f2 | awk '{print $1}')"
+		SSLSignAlgoritm="$(less  "$CertificateFile" | openssl x509 -noout -text | grep -i "Signature Algorithm" | sort -u | cut -d: -f2 | sed 's/^ //')"
+		case "$SSLSignAlgoritm" in
+			rsaEncryption)				SSLSignAlgoritmText="Rivest, Shamir and Adleman (RSA) encryption (and signing)";;
+			md2WithRSAEncryption)		SSLSignAlgoritmText="Message Digest 2 (MD2) checksum with Rivest, Shamir and Adleman (RSA) encryption";;
+			md4withRSAEncryption)		SSLSignAlgoritmText="Message Digest 4 (MD4) checksum with Rivest, Shamir and Adleman (RSA) encryption";;
+			md5WithRSAEncryption)		SSLSignAlgoritmText="Rivest, Shamir and Adleman (RSA) encryption with Message Digest 5 (MD5) signature";;
+			sha1-with-rsa-signature)	SSLSignAlgoritmText="Rivest, Shamir and Adleman (RSA) with Secure Hash Algorithm (SHA-1) signature";;
+			rsaOAEPEncryptionSET)		SSLSignAlgoritmText="Rivest, Shamir and Adleman (RSA) Optimal Asymmetric Encryption Padding (OAEP) encryption set";;
+			id-RSAES-OAEP)				SSLSignAlgoritmText="Public-key encryption scheme combining Optimal Asymmetric Encryption Padding (OAEP) with the Rivest, Shamir and Adleman Encry...";;
+			id-mgf1)					SSLSignAlgoritmText="Rivest, Shamir and Adleman (RSA) algorithm that uses the Mask Generator Function 1 (MGF1)";;
+			id-pSpecified)				SSLSignAlgoritmText="Rivest, Shamir and Adleman (RSA) algorithm (szOID_RSA_PSPECIFIED)";;
+			rsassa-pss)					SSLSignAlgoritmText="Rivest, Shamir, Adleman (RSA) Signature Scheme with Appendix - Probabilistic Signature Scheme (RSASSA-PSS)";;
+			sha384WithRSAEncryption)	SSLSignAlgoritmText="Secure Hash Algorithm 384 (SHA384) with Rivest, Shamir and Adleman (RSA) Encryption";;
+			sha512WithRSAEncryption)	SSLSignAlgoritmText="Secure Hash Algorithm (SHA) 512 with Rivest, Shamir and Adleman (RSA) encryption";;
+			sha256WithRSAEncryption)	SSLSignAlgoritmText="Secure Hash Algorithm 256 (SHA256) with Rivest, Shamir and Adleman (RSA) encryption";;
+		esac
+		SSLProtocol="$(less "$CertificateFile" | grep "Protocol" | cut -d: -f2 | sed 's/^\ //')"  # SSLProtocol='TLSv1.2'
 		# Version	Intro.	Phase out
 		# TLS 1.0	1999	Deprecation planned in 2020
 		# TLS 1.1	2006	Deprecation planned in 2020
 		# TLS 1.2	2008
 		# TLS 1.3	2018
 		[ "$SSLProtocol" = "TLSv1" -o "$SSLProtocol" = "TLSv1.1" ] && SSLProtocol="$SSLProtocol (old: will be deprecated in 2020)"
-		SSLIssuer="$(echo "${SSLResult}" | openssl x509 -noout -issuer | sed -e 's/issuer= //')"
+		SSLIssuer="$(less "$CertificateFile" | openssl x509 -noout -issuer | sed -e 's/issuer= //')"
 		# Is the cert “appropriate”, i.e. does the cert actually cover the name we are looking at? Also look at 
 		# wildcard certs (which are assumed to contain wildcard only in the first position)
 		if [ -n "$(echo "$SSLDNS" | egrep -o "$DNS")" -o -n "$(echo "$SSLDNS" | egrep -o "\*\.$(echo "$DNS" | cut -d. -f2-)")" ]; then
@@ -239,24 +257,6 @@ GetSSLCertAttribExplain()
 	esac
 }
 
-GetSecureAlgoritmExplain()
-{
-	case "$SSLSignAlgoritm" in
-		rsaEncryption)				SSLSignAlgoritmText="Rivest, Shamir and Adleman (RSA) encryption (and signing)";;
-		md2WithRSAEncryption)		SSLSignAlgoritmText="Message Digest 2 (MD2) checksum with Rivest, Shamir and Adleman (RSA) encryption";;
-		md4withRSAEncryption)		SSLSignAlgoritmText="Message Digest 4 (MD4) checksum with Rivest, Shamir and Adleman (RSA) encryption";;
-		md5WithRSAEncryption)		SSLSignAlgoritmText="Rivest, Shamir and Adleman (RSA) encryption with Message Digest 5 (MD5) signature";;
-		sha1-with-rsa-signature)	SSLSignAlgoritmText="Rivest, Shamir and Adleman (RSA) with Secure Hash Algorithm (SHA-1) signature";;
-		rsaOAEPEncryptionSET)		SSLSignAlgoritmText="Rivest, Shamir and Adleman (RSA) Optimal Asymmetric Encryption Padding (OAEP) encryption set";;
-		id-RSAES-OAEP)				SSLSignAlgoritmText="Public-key encryption scheme combining Optimal Asymmetric Encryption Padding (OAEP) with the Rivest, Shamir and Adleman Encry...";;
-		id-mgf1)					SSLSignAlgoritmText="Rivest, Shamir and Adleman (RSA) algorithm that uses the Mask Generator Function 1 (MGF1)";;
-		id-pSpecified)				SSLSignAlgoritmText="Rivest, Shamir and Adleman (RSA) algorithm (szOID_RSA_PSPECIFIED)";;
-		rsassa-pss)					SSLSignAlgoritmText="Rivest, Shamir, Adleman (RSA) Signature Scheme with Appendix - Probabilistic Signature Scheme (RSASSA-PSS)";;
-		sha384WithRSAEncryption)	SSLSignAlgoritmText="Secure Hash Algorithm 384 (SHA384) with Rivest, Shamir and Adleman (RSA) Encryption";;
-		sha512WithRSAEncryption)	SSLSignAlgoritmText="Secure Hash Algorithm (SHA) 512 with Rivest, Shamir and Adleman (RSA) encryption";;
-		sha256WithRSAEncryption)	SSLSignAlgoritmText="Secure Hash Algorithm 256 (SHA256) with Rivest, Shamir and Adleman (RSA) encryption";;
-	esac
-}
 ##################################################
 
 # START OF ACTUAL WORK
@@ -298,17 +298,16 @@ if [ -z "$OpenSSLToOld" ]; then
 		printf "${F1}${F2}\n" "Valid to:" "$SSLValidTo"
 		printf "${F1}${F2}\n" "Protocol:" "${SSLProtocol}"
 		printf "${F1}${F2}\n" "Bits:" "${SSLBits}"
-		GetSecureAlgoritmExplain
 		printf "${F1}${F2}\n" "Signature algoritm:" "${SSLSignAlgoritm}  (“${SSLSignAlgoritmText:--No explanaination for this algoritm-}”)"
 		printf "${F1}${F2}\n" "Issuer:" "${SSLIssuer}"
 		if [ ! "$SSLIssuer" = "Self signed certificate" ]; then
 			printf "${ESC}${ItalicFace}mIssuer information dissected for clarity:${Reset}\n"
 			SSLIssuerString="$(echo "$SSLIssuer" | sed -e 's;^/;;' | tr '/' '\n')"
-			# C=NL
+			# SSLIssuerString='C=NL
 			# ST=Noord-Holland
 			# L=Amsterdam
 			# O=TERENA
-			# CN=TERENA SSL CA 3
+			# CN=TERENA SSL CA 3'
 			OldIFS=$IFS
 			IFS==
 			echo "$SSLIssuerString" | while read -r CertAttribute CertAttributeValue
