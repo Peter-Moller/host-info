@@ -6,8 +6,7 @@
 
 
 GeoLookupURL="ipinfo.io"
-CountriesURL="http://fileadmin.cs.lth.se/intern/Drift/Countries.txt"
-CountriesFile="/tmp/.Countries.txt"
+CountriesFile="Countries.txt"
 # (Colors can be found at http://en.wikipedia.org/wiki/ANSI_escape_code, http://graphcomp.com/info/specs/ansi_col.html and other sites)
 Reset="\e[0m"
 ESC="\e["
@@ -152,13 +151,10 @@ function GeoLocate()
 	ASHandle="$(echo "$Org" | awk '{print $1}')"
 	# ASHandle='AS1299'
 
-	# Hämta Landslistan om den inte finns
-	[[ -f "$CountriesFile" ]] || curl -s -f -o "$CountriesFile" "$CountriesURL" 2>/dev/null
-	# Gräv fram det långa landsnamnet
-	CountryName="$(grep $CountryShort $CountriesFile | cut -d: -f2)"
-	# CountryName=Denmark
+	# Get the long (real) name of the country
+	CountryName="$(grep $CountryShort $CountriesFile | cut -d: -f2)"	# CountryName='Denmark'
 
-	#Tag fram reversen och skala bort den avslutande punkten:
+	# Get the reverse DNS-name (and remove the last '.')
 	Reverse="$(/usr/bin/dig +short -x $IP | sed 's/.$//')"
 }
 
