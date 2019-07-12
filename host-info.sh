@@ -273,6 +273,8 @@ GetSSLCertAttribExplain()
 		STREET) CertAttributeText="Street addr.";;
 		ALL)    CertAttributeText="Complete name";;
 	esac
+	# Get the full country name
+	[ "$CertAttributeText" = "Country" ] && CertAttributeValue="$(grep $CertAttributeValue $CountriesFile | cut -d: -f2)"
 }
 
 ##################################################
@@ -303,12 +305,12 @@ if [ -z "$OpenSSLToOld" ]; then
 		[ -z "$PortGiven" ] && printf "${ESC}${ItalicFace}mNo port given: SSL-info based on a guess of port \"443\"!!${Reset}\n"
 		if [ "$SSLReturnText" = "Certificate is valid" ]; then 
 			Color="${ESC}${GreenFont}m"
-			printf "${F1}${Color}${F2}${Reset}\n" "Info:" "Certificate is valid"
+			printf "${F1}${Color}${F2}${Reset}\n" "Info:" "$SSLReturnText"
 		elif [ "$SSLReturnText" = 'certificate has expired (code: 10)' ]; then
 			Color="${ESC}${RedFont}m"
-			printf "${F1}${Color}${F2}${Reset}\n" "Info:" "Certificate has expired (code: 10)"
+			printf "${F1}${Color}${F2}${Reset}\n" "Info:" "$SSLReturnText"
 		else
-			printf "${F1}${Color}${F2}\n" "Info:" "${SSLReturnText}"
+			printf "${F1}${F2}\n" "Info:" "${SSLReturnText}"
 		fi
 		printf "${F1}${F2}\n" "${SSLNrDNS} registered DNS:" "${SSLDNS:---no extra DNS names--}"
 		[ -z "$SSLAppropriate" ] && printf  "${F1}${ESC}${RedFont}m${F2}${Reset}\n" "" "Note: this certificate DOES NOT cover \"$DNS\"!"
@@ -326,15 +328,12 @@ if [ -z "$OpenSSLToOld" ]; then
 			# L=Amsterdam
 			# O=TERENA
 			# CN=TERENA SSL CA 3'
-			OldIFS=$IFS
-			IFS==
-			echo "$SSLIssuerString" | while read -r CertAttribute CertAttributeValue
+			echo "$SSLIssuerString" | while IFS== read -r CertAttribute CertAttributeValue
 			do
 				# echo "Short: \"$Short\"; Long: \"$Long\""
 			 	GetSSLCertAttribExplain
 			 	printf "${F1}${F2}\n" " - ${CertAttributeText}:" "${CertAttributeValue}"
 			done
-			IFS=$OldIFS
 		fi
 	fi
 else
