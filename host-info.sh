@@ -63,8 +63,17 @@ do
 	esac
 done
 
-if [ ! -x /usr/bin/dig ]; then
-	echo "No \"dig\" found (in /usr/bin). Script will exit."
+# Stop if 'dig' or 'curl' isn't available
+if ! which dig >&/dev/null; then
+	CmdError="t"
+	echo "CRITICAL ERROR: command \"dig\" not found on \$PATH!"
+fi
+if ! which curl >&/dev/null; then
+	CmdError="t"
+	echo "CRITICAL ERROR: command \"curl\" not found on \$PATH!"
+fi
+if [ "$CmdError" = "t" ]; then
+	echo "Script will now exit."
 	exit 1
 fi
 
