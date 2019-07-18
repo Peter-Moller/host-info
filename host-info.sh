@@ -77,6 +77,19 @@ if [ "$CmdError" = "t" ]; then
 	exit 1
 fi
 
+# Create TempDir -- used to store the files
+TempDir="/tmp/host-info"
+[ ! -d "$TempDir" ] && mkdir "$TempDir" 2>/dev/null
+
+# Find where the script resides (so updates update the correct version) -- without trailing slash
+DirName="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# What is the name of the script? (without any PATH)
+ScriptName="$(basename $0)"
+# If "${DirName}/${ScriptName}" is a link, find the original and correct DirName
+if [ -L "${DirName}/${ScriptName}" ]; then
+	DirName="$(ls -ls "${DirName}/${ScriptName}" | cut -d\> -f2 | sed -e 's/^\ //' -e 's;/host-info.sh;;')"
+fi
+
 #
 Input=$1   # Input='https://www.youtube.com/watch?v=98eabjjAEz8'
 # Make it shorter by removing everything from a question mark and forwards
@@ -123,10 +136,10 @@ fi
 OpenSSLToOld="$(openssl version | egrep -o "0.9.8")"   # OpenSSLToOld='0.9.8'
 
 # Where to store the GeoLookup-data
-GeoLocateFile="/tmp/${IP}.json"
+GeoLocateFile="${TempDir}/${IP}.json"
 
 # Where to store the certificate information
-CertificateFile="/tmp/${IP}.certificate"
+CertificateFile="${TempDir}/${IP}.certificate"
 
 
 # Find out where the device is
@@ -161,7 +174,7 @@ function GeoLocate()
 	# ASHandle='AS1299'
 
 	# Get the long (real) name of the country
-	CountryName="$(grep $CountryShort $CountriesFile | cut -d: -f2)"	# CountryName='Denmark'
+	CountryName="$(grep $CountryShort "${DirName}/${CountriesFile}" | cut -d: -f2)"	# CountryName='Denmark'
 
 	# Get the reverse DNS-name (and remove the last '.')
 	Reverse="$(/usr/bin/dig +short -x $IP | sed 's/.$//')"
@@ -274,7 +287,7 @@ GetSSLCertAttribExplain()
 		ALL)    CertAttributeText="Complete name";;
 	esac
 	# Get the full country name
-	[ "$CertAttributeText" = "Country" ] && CertAttributeValue="$(grep $CertAttributeValue $CountriesFile | cut -d: -f2)"
+	[ "$CertAttributeText" = "Country" ] && CertAttributeValue="$(grep $CertAttributeValue "${DirName}/${CountriesFile}" | cut -d: -f2)"
 }
 
 ##################################################
