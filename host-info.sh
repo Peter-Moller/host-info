@@ -6,8 +6,7 @@
 
 
 GeoLookupURL="ipinfo.io"
-CountriesURL="http://fileadmin.cs.lth.se/intern/Drift/Countries.txt"
-CountriesFile="/tmp/.Countries.txt"
+CountriesFile="Countries.txt"
 # (Colors can be found at http://en.wikipedia.org/wiki/ANSI_escape_code, http://graphcomp.com/info/specs/ansi_col.html and other sites)
 Reset="\e[0m"
 ESC="\e["
@@ -64,9 +63,31 @@ do
 	esac
 done
 
-if [ ! -x /usr/bin/dig ]; then
-	echo "No \"dig\" found (in /usr/bin). Script will exit."
+# Stop if 'dig' or 'curl' isn't available
+if ! which dig >&/dev/null; then
+	CmdError="t"
+	echo "CRITICAL ERROR: command \"dig\" not found on \$PATH!"
+fi
+if ! which curl >&/dev/null; then
+	CmdError="t"
+	echo "CRITICAL ERROR: command \"curl\" not found on \$PATH!"
+fi
+if [ "$CmdError" = "t" ]; then
+	echo "Script will now exit."
 	exit 1
+fi
+
+# Create TempDir -- used to store the files
+TempDir="/tmp/host-info"
+[ ! -d "$TempDir" ] && mkdir "$TempDir" 2>/dev/null
+
+# Find where the script resides (so updates update the correct version) -- without trailing slash
+DirName="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# What is the name of the script? (without any PATH)
+ScriptName="$(basename $0)"
+# If "${DirName}/${ScriptName}" is a link, find the original and correct DirName
+if [ -L "${DirName}/${ScriptName}" ]; then
+	DirName="$(ls -ls "${DirName}/${ScriptName}" | cut -d\> -f2 | sed -e 's/^\ //' -e 's;/host-info.sh;;')"
 fi
 
 #
@@ -115,10 +136,10 @@ fi
 OpenSSLToOld="$(openssl version | egrep -o "0.9.8")"   # OpenSSLToOld='0.9.8'
 
 # Where to store the GeoLookup-data
-GeoLocateFile="/tmp/${IP}.json"
+GeoLocateFile="${TempDir}/${IP}.json"
 
 # Where to store the certificate information
-CertificateFile="/tmp/${IP}.certificate"
+CertificateFile="${TempDir}/${IP}.certificate"
 
 
 # Find out where the device is
@@ -152,13 +173,10 @@ function GeoLocate()
 	ASHandle="$(echo "$Org" | awk '{print $1}')"
 	# ASHandle='AS1299'
 
-	# Hämta Landslistan om den inte finns
-	[[ -f "$CountriesFile" ]] || curl -s -f -o "$CountriesFile" "$CountriesURL" 2>/dev/null
-	# Gräv fram det långa landsnamnet
-	CountryName="$(grep $CountryShort $CountriesFile | cut -d: -f2)"
-	# CountryName=Denmark
+	# Get the long (real) name of the country
+	CountryName="$(grep $CountryShort "${DirName}/${CountriesFile}" | cut -d: -f2)"	# CountryName='Denmark'
 
-	#Tag fram reversen och skala bort den avslutande punkten:
+	# Get the reverse DNS-name (and remove the last '.')
 	Reverse="$(/usr/bin/dig +short -x $IP | sed 's/.$//')"
 }
 
@@ -268,6 +286,8 @@ GetSSLCertAttribExplain()
 		STREET) CertAttributeText="Street addr.";;
 		ALL)    CertAttributeText="Complete name";;
 	esac
+	# Get the full country name
+	[ "$CertAttributeText" = "Country" ] && CertAttributeValue="$(grep $CertAttributeValue "${DirName}/${CountriesFile}" | cut -d: -f2)"
 }
 
 ##################################################
@@ -298,12 +318,12 @@ if [ -z "$OpenSSLToOld" ]; then
 		[ -z "$PortGiven" ] && printf "${ESC}${ItalicFace}mNo port given: SSL-info based on a guess of port \"443\"!!${Reset}\n"
 		if [ "$SSLReturnText" = "Certificate is valid" ]; then 
 			Color="${ESC}${GreenFont}m"
-			printf "${F1}${Color}${F2}${Reset}\n" "Info:" "Certificate is valid"
+			printf "${F1}${Color}${F2}${Reset}\n" "Info:" "$SSLReturnText"
 		elif [ "$SSLReturnText" = 'certificate has expired (code: 10)' ]; then
 			Color="${ESC}${RedFont}m"
-			printf "${F1}${Color}${F2}${Reset}\n" "Info:" "Certificate has expired (code: 10)"
+			printf "${F1}${Color}${F2}${Reset}\n" "Info:" "$SSLReturnText"
 		else
-			printf "${F1}${Color}${F2}\n" "Info:" "${SSLReturnText}"
+			printf "${F1}${F2}\n" "Info:" "${SSLReturnText}"
 		fi
 		printf "${F1}${F2}\n" "${SSLNrDNS} registered DNS:" "${SSLDNS:---no extra DNS names--}"
 		[ -z "$SSLAppropriate" ] && printf  "${F1}${ESC}${RedFont}m${F2}${Reset}\n" "" "Note: this certificate DOES NOT cover \"$DNS\"!"
@@ -321,15 +341,12 @@ if [ -z "$OpenSSLToOld" ]; then
 			# L=Amsterdam
 			# O=TERENA
 			# CN=TERENA SSL CA 3'
-			OldIFS=$IFS
-			IFS==
-			echo "$SSLIssuerString" | while read -r CertAttribute CertAttributeValue
+			echo "$SSLIssuerString" | while IFS== read -r CertAttribute CertAttributeValue
 			do
 				# echo "Short: \"$Short\"; Long: \"$Long\""
 			 	GetSSLCertAttribExplain
 			 	printf "${F1}${F2}\n" " - ${CertAttributeText}:" "${CertAttributeValue}"
 			done
-			IFS=$OldIFS
 		fi
 	fi
 else
