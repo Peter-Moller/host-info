@@ -2,28 +2,28 @@
 
 Hi!
 
-This text aims at trying to explain a few things that might not be known to all interested users of host-info.
+This text aims at trying to explain a few things that might not be known to all interested users of ``host-info``.
 It is by no means an exhaustive explanation but merely an “appetiser” of sorts, aiming to direct interest rather than deep explanation.
 
 
 ## Geo Location:
-This is an increasingly interesting topic. There are serious financial interests in knowing where potential customers are located; the Ad industry want nothing more than to know *exactly* where *you* are. And those guys are closely followed (or?) by various national security organisations with the same goal. 
-There is a number of web sites that can geolocate an IP address. Both Apples macOS and Microsoft Windows have API:s for that purpose.
+This is an increasingly interesting topic. Serious financial interest is invested in knowing where potential customers are located; the Ad industry want nothing more than to know *exactly* where *you* are. And those guys are closely followed (?) by various national security organisations with the same goal: to know where *you* are. 
+There are a number of web sites that can geographically locate, “geolocate”, an IP address. Both Apples macOS and Microsoft Windows have API:s for that purpose.
 
-So can one trust the Geo Location information? Well: you get what you pay for. Since I don't pay in this script, the information is so-so correct. I have rarely seen a country that wasn't correct, but it happens. The city and region has a lower level of correctness. But from most legal aspects (GDPR for instance) country is good enough. If correct geolocation is important to you, please check with other sources as well!
+So can one trust the geolocation information? Well: you get what you pay for. Since I don't pay in this script, the information is so-so correct. I have rarely seen a country that wasn't correct, but it happens. The city and region has a lower level of correctness. But from most legal aspects (GDPR for instance) country is good enough. If correct geolocation is important to you, please check with other sources as well!
 
 One simple/primitive way one can check the correcftness of the geolocation is by looking at the ping times.
 
 ## Ping times:
-Ping is a computer network utility used to test the reachability of hosts on Internet (the name ``ping`` comes from submarine warfare). It measures the round-trip time from the originating host to a destination computer and back to the source using a protocol called [ICMP](https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol). Not all hosts answers to this kind of traffic, though, so a non-answer might be perfectly “ok”.
+Ping is a computer network utility used to test the reachability of hosts on Internet (the name ``ping`` comes from submarine warfare). It measures the round-trip time from the originating host to a destination computer and back to the source using a protocol called [ICMP](https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol) (which is not the same as “normal” internet traffic). Not all hosts answers to this kind of traffic, though, so a non-answer might be perfectly “ok”.
 
-*(If you are interested and somewhat technically inclined, I highly recommend the software [mtr](https://github.com/traviscross/mtr)! Pro tip: press ``d`` twice when you run it!)*
+*(If you are interested and somewhat technically inclined, I highly recommend the software [mtr](https://github.com/traviscross/mtr)! Pro tip: press ``d`` twice when you run it! More of ``mtr`` later)*
 
 A *very* rough division in times is:
 
 | Ping time | Distance |
 |-----------|----------|
-|   ≈ 1 ms  | Local network or really close   |
+|   ≈ 1 ms  | Local network or really close (walking or bicycling distance)  |
 |  < 10 ms  | Pretty close, i.e. same country |
 | < 100 ms  | Same continent                  |
 | > 300 ms  | Other side of the planet        |
@@ -40,7 +40,9 @@ So 10 ms will get you:
 
 
 ## The way of the data
-When two computers communicate, the traffic is chopped up in chunks calles “packets”, each holding about half the text of a fully written A4 page (or US letter). These are “routed” over the Internet through boxes called, yes, “routers”. Very simply put, one might view it as this:  
+When two computers communicate, the traffic is chopped up in chunks calles “packets”, each holding about half the text of a fully written A4 page (or US letter). These are “routed” over the Internet through boxes called, yes, “routers”. 
+
+Very simply put, one might view it as this:  
 ![](Computer_network_1.jpg)
 
 When one looks more closely, there are more steps inbetween:  
@@ -49,27 +51,28 @@ As you can see, there are more steps involved. Several routers pass the packets 
 
 An authentic example is this ``mtr``-session between my computer in Lund, Sweden and the web server at [The University of Canterbury](https://www.canterbury.ac.nz) in New Zealand (on the opposite side of the planet):  
 ![](mtr_to_New_Zealand.png)  
-Here you can see that 24 routers are involed and the ping times accumulate on “chunks”:  
-* while in Sweden, the ping times are below 67 ms  
-* then it enters the US (on the east coast—I checked😉) and exits on the west coast near Seattle (again, I checked) and the ping times increase from 100 to 200 ms while crossing the North American continent  
+Here you can see that 24 routers are involed and the ping times accumulate in “chunks”:  
+* while in Sweden, the ping times are below 67 ms and the packets pass 8 routers
+* then it enters the US (on the east coast—I checked😉) and exits on the west coast near Seattle (again, I checked) and the ping times increase from 100 to 200 ms while crossing 11 routers on it's way through the North American continent  
 * then it arrives in New Zealand and we are at around 350 ms
 
 Those who are interested can view the wonderful [Submarine Cable Map](https://www.submarinecablemap.com) to see where the cables under the oceans are actually located!
 
 ## Time is money
-Well, this wasn't terribly good! Playing a real time game like Counterstrike with a ping time of 300 ms is really horrible. Or trying to get to a web page that is far away can be a non starter; almost all web pages load houndreds of resources from other sites: ads, images, Google Analytics and so on and each of these must be loaded before the web page is fully loaded.
+Well, this wasn't terribly good! Playing a real time game like Counterstrike with a ping time of 300 ms is really horrible. Or trying to get to a web page that is far away can be a non starter; almost all web pages these days load houndreds of resources from other sites: ads, images, Google Analytics and so on and each of these must be loaded before the web page is fully loaded.
 
-In 2009, Amazon found that every 100 ms of latency cost them 1% in sales. Google found that an extra 0.5 seconds in their page generation dropped traffic by 20%. A broker could lose $4 million in revenues per millisecond if their electronic trading platform was 5 milliseconds behind the competition. That was 2009. In 2017, [Akamai](https://www.akamai.com/uk/en/about/news/press/2017-press/akamai-releases-spring-2017-state-of-online-retail-performance-report.jsp) found that the figure for Amazon sales drop is not 1% but 7%. Read more here: https://www.gigaspaces.com/blog/amazon-found-every-100ms-of-latency-cost-them-1-in-sales/
+In 2009, Amazon found that every 100 ms of latency cost them 1% in sales. Google found that an extra 0.5 seconds in their page generation dropped traffic by 20%. A broker could lose $4 million in revenues per millisecond if their electronic trading platform was 5 milliseconds behind the competition. That was 2009. In 2017, [Akamai](https://www.akamai.com/uk/en/about/news/press/2017-press/akamai-releases-spring-2017-state-of-online-retail-performance-report.jsp) found that the figure for Amazon sales drop is not 1% but 7%.  
+*(Read more here: https://www.gigaspaces.com/blog/amazon-found-every-100ms-of-latency-cost-them-1-in-sales/)*
 
 So, what to do about that?
 
 
 ## CDN – Content Delivery Network:
 A content delivery network (CDN) is a service that securely delivers data, videos and applications to customers globally with low latency and high transfer speeds. 
-Some CDNs also offer DDoS mitigation, that is: they can “absorb” a network attack and make their customers web servers accessible even when under attack.
+Some CDNs also offer DDoS (“attack”) mitigation, that is: they can “absorb” a network attack and make their customers web servers accessible even when under attack.
 
-The CDN operators have datacenters called “Point Of Presence” (POP) spread around the world in order to serve web pages and content quickly to customers. They collborate with DNS servers to fool them in a clever way: you might have thought that a DNS-name, such as www.yale.edu, **always** resolve to the same IP-address, but it doesn't.
-So, while you *think* that you access a web site in another country, or another continent, in reality you are talking to a CDN that may be located in your own country or even region. So when I sit in Sweden and read https://www.macworld.com, a Mac related news-magazine that is located in San Fransisco in California, USA, I am *really* accessing a CDN-POP in Stockholm (Sweden) operated by the CDN “Fastly”. Pretty neat, but can also make it hard to judge where things really are… Another example is Yale University: it *is* located just north of New York city on the American east coast, but when I access the web page from Sweden, it appears to be located in Dublin, Ireland. If you are living in Indonesia, the DNS you are accessing *for the same web site* will most probably be something else, closer to you. (Yale University uses Microsofts web platform to do this).
+The CDN operators have datacenters called “Point Of Presence” (POP) spread around the world in order to serve web pages and content quickly to customers. They collborate with DNS servers to fool them in a clever way: you might have thought that a DNS-name, such as ``www.macworld.com``, **always** resolve to the same IP-address, but it doesn't.
+So, while you *think* that you access a web site in another country, or another continent, in reality you are talking to a CDN that may be located in your own country or even region. So when I sit in Sweden and read [MacWorld](https://www.macworld.com), a Mac related news-magazine that is located in San Fransisco in California, USA, I am *really* accessing a CDN-POP in Stockholm (Sweden) operated by the CDN “Fastly”. Pretty neat, but can also make it hard to judge where things really are… Another example is Yale University: it *is* located just north of New York city on the American east coast, but when I access the web page from Sweden, it appears to be located in Dublin, Ireland. If you are living in Indonesia, the DNS you are accessing *for that same web site* will most probably be something else, closer to you. (Yale University uses, i.e. pays, Microsofts web platform to do this).
 
 
 You can read more about CDN here: https://en.wikipedia.org/wiki/Content_delivery_network
