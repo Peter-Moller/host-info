@@ -30,7 +30,7 @@ A *very* rough division in times is:
 
 The ping time is made up by time spent in various cables (or WiFi) and time spent in routers.
 
-### Time spent in cables
+**Time spent in cables**  
 
 The speed of the data signal is roughly:
 * in the air (WiFi): about the speed of light (called ``c``): 300,000 km/s
@@ -45,7 +45,7 @@ So 10 ms will get you:
 **Time spent in routers**  
 This is very hard to specify since it varies greatly depending on both the capacity of the routers and their load. Modern “core routers” have an enormous capacity, but are also quite expensive so they are not changed very often. The actual work the routers perform differs: some just pass the packets between then while others also perform various forms of [traffic shaping](https://en.wikipedia.org/wiki/Traffic_shaping) in order to guarantee that “real time media” (voice and video) get priority over data that are not as urgent.
 
-**The way of the data**  
+## The way of the data
 When two computers communicate, the traffic is chopped up in chunks called “packets”, each holding about half the text of a fully written A4 page (or US letter). These are “routed” over the Internet through boxes called, yes, “routers”. 
 
 Very simply put, one might view it as this:  
