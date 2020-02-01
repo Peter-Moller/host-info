@@ -31,7 +31,6 @@ A *very* rough division in times is:
 The ping time is made up by time spent in various cables (or WiFi) and time spent in routers.
 
 **Time spent in cables**  
-
 The speed of the data signal is roughly:
 * in the air (WiFi): about the speed of light (called ``c``): 300,000 km/s
 * in an copper wire (ethernet): approx. 64% of ``c``, or 192,000 km/s
