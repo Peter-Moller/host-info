@@ -2,11 +2,23 @@
 
 Hi!
 
-This text aims at trying to explain a few things that might not be known to all interested users of ``host-info``.
+This text aims at trying to explain a few things that might not be known to all interested users of ``host-info``. Technical knowledge is not required, just curiosity!
+
+I will go through the following:  
+* Where computers are (“Geo Location”)
+* How far away are they (“Ping times”)
+* How things get from one point to another (“The way of the data”)
+* Does it really matter? (“Time is money”)
+* Are we there yet? (“CDN – Content Delivery Network”)
+* Who knows about my credit card? (“TLS – why we can do banking on the internet”)
+
 It is by no means an exhaustive explanation but merely an “appetiser” of sorts, aiming to direct interest rather than deep explanation.
 
+Oh – there will be pictures! 🤪
 
-## Geo Location:
+---
+
+## Geo Location
 This is an increasingly interesting topic. Serious financial interest is invested in knowing where potential customers are located; the Ad industry want nothing more than to know *exactly* where *you* are. And those guys are closely followed (?) by various national security organisations with the same goal: to know where *you* are. 
 There are a number of web sites that can geographically locate, “geolocate”, an IP address. Both Apples macOS and Microsoft Windows have API:s for that purpose.
 
@@ -14,7 +26,7 @@ So can one trust the geolocation information? Well: you get what you pay for. Si
 
 One simple/primitive way one can check the correcftness of the geolocation is by looking at the ping times.
 
-## Ping times:
+## Ping times
 Ping is a computer network utility used to test the reachability of hosts on Internet (the name ``ping`` comes from submarine warfare). It measures the round-trip time from the originating host to a destination computer and back to the source using a protocol called [ICMP](https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol) (which is not the same as “normal” internet traffic). Not all hosts answers to this kind of traffic, though, so a non-answer might be perfectly “ok”.
 
 *(If you are interested and somewhat technically inclined, I highly recommend the software [mtr](https://github.com/traviscross/mtr)! Pro tip: press ``d`` twice when you run it! More of ``mtr`` later)*
