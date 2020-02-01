@@ -102,7 +102,7 @@ This is what TLS does. TLS stands for [Transport Layer Security](https://en.wiki
   
 ----
 
-Entire books (and full careers) can be spent on each subject above! This is but an extremely short introduction the a dizzyingly rich and transforming field! I hope the text helped more than it hurt; my hope is that you will be confused, but at a higher level than before! 😉
+Entire books (and full careers) can be spent on each subject above! This is but an extremely short introduction to a dizzyingly rich and ever transforming field! I hope the text helped more than it hurt; my hope is that you will be confused, but at a higher level than before! 😉
 
 Stay curious!  
 /Peter Möller
