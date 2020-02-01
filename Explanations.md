@@ -28,6 +28,10 @@ A *very* rough division in times is:
 | < 100 ms  | Same continent                  |
 | > 300 ms  | Other side of the planet        |
 
+The ping time is made up by time spent in various cables (or WiFi) and time spent in routers.
+
+### Time spent in cables
+
 The speed of the data signal is roughly:
 * in the air (WiFi): about the speed of light (called ``c``): 300,000 km/s
 * in an copper wire (ethernet): approx. 64% of ``c``, or 192,000 km/s
@@ -38,6 +42,8 @@ So 10 ms will get you:
 * 1,920 km in copper
 * 2,100 – 2,850 km through optical fiber
 
+### Time spent in routers
+This is very hard to specify since it varies greatly depending on both the capacity of the routers and their load. Modern “core routers” have an enormous capacity, but are also quite expensive so they are not changed very often. The actual work differs: some just pass the packets between then while others also perform various forms of [traffic shaping](https://en.wikipedia.org/wiki/Traffic_shaping) in order to guarantee that “real time media” (voice and video) get priority over data that are not as urgent.
 
 ## The way of the data
 When two computers communicate, the traffic is chopped up in chunks called “packets”, each holding about half the text of a fully written A4 page (or US letter). These are “routed” over the Internet through boxes called, yes, “routers”. 
@@ -47,7 +53,7 @@ Very simply put, one might view it as this:
 
 When one looks more closely, there are more steps inbetween:  
 ![](Computer_network_2.jpg)  
-As you can see, there are more steps involved. Several routers pass the packets between them and these routers can be located on different continents. Some just pass the packets between then while others also perform various forms of [traffic shaping](https://en.wikipedia.org/wiki/Traffic_shaping) in order to guarantee that “real time media” (voice and video) get priority over data that are not as urgent.
+As you can see, there are more steps involved. Several routers pass the packets between them and these routers can be located on different continents. 
 
 An authentic example is this ``mtr``-session between my computer in Lund, Sweden and the web server at [The University of Canterbury](https://www.canterbury.ac.nz) in New Zealand (on the opposite side of the planet):  
 ![](mtr_to_New_Zealand.png)  
