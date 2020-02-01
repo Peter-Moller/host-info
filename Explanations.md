@@ -2,7 +2,7 @@
 
 Hi!
 
-This text aims at trying to explain a few things that might not known to all interested users of host-info.
+This text aims at trying to explain a few things that might not be known to all interested users of host-info.
 It is by no means an exhaustive explanation but merely an “appetiser” of sorts, aiming to direct interest rather than deep explanation.
 
 
@@ -79,14 +79,16 @@ All traffic on the internet start “in the clear” which means that anyone lis
 
 So how does the Internet deal with this? How do you manage to go from a situation where A and B are talking to one another, in the clear, while C is listening in to everything they are saying, to a situation where only A and B can understand what they are saying? How do they start their “secret talk” with C listening, but without C being able to get in on the secrets?
 
-This is what TLS does. TLS stands for [Transport Layer Security](https://en.wikipedia.org/wiki/Transport_Layer_Security) and superseedes the older “Secure Sockets Layer”. You see it as the green padlock in the left part of the address field at the top of the web browser window. The start of the conversation is the crucial part and is called “TLS handshake”. The inner workings of TLS is mathematics beyond this text, but in short it works like this:
-* The client initiates the handshake by sending a “hello” message to the server and also include a list of which TLS-versions it can use (1.0, 1.2, 1.3, etc.) as well as the cipher suites it can understand and a string of random bytes known as the “client random”
-* The server says “hello” back and include the servers public certificate, the server's chosen cipher suite, and the “server random” – a random string of bytes
-* The client verify the certificate that the server sen
-* Decide on which cipher they will use
-* Verify the identity of the server via the server’s public key and the SSL certificate authority’s digital signature
-* Generate secret keys that will be used during the session that starts after the handshake is complete
-
+This is what TLS does. TLS stands for [Transport Layer Security](https://en.wikipedia.org/wiki/Transport_Layer_Security) and superseedes the older “Secure Sockets Layer”. You see it as the green padlock in the left part of the address field at the top of the web browser window. The start of the conversation is the crucial part and is called “TLS handshake”. The inner workings of TLS is mathematics that is way beyond this text, but in short the handshake works like this:
+1. The client initiates the handshake by sending a “hello” message to the server and also include a list of cryptos it can understand and a string of random data known as the “client random” (this will be used later)
+2. The server says “hello” back and include the servers public certificate, the server's chosen cipher suite and also the “server random” – it's random data
+3. The client verifies the certificate that the server sent is actually correct, i.e. that the server is who it says it is. The client does this by using a list of pre-existing certificate authorities that is included in, and updated by, the computers Operationg System (macOS, Windows, iOS, Android etc.)
+4. The “premaster secret”: The client sends one more random string of data, the “premaster secret”. This is encrypted with the servers public key and can only be decrypted with the private key **that only the server has**. (The client gets the public key from the server's SSL certificate.) This is the secret in the sause!!
+5. The server decrypts the premaster secret
+6. Session keys created: Both client and server generate session keys from the “client random”, the “server random”, and the ”premaster secret”. They should arrive at the same results.
+7. Client is ready: The client sends a “finished” message that is encrypted with a session key
+8. Server is ready: The server sends a “finished” message encrypted with a session key
+9. The handshake is now completed and secure encryption achieved
 
   
 ----
