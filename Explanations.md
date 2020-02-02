@@ -104,13 +104,13 @@ the server has a private piece of data that it can use to generate a secret ciph
 
 A little bit more expanded this is how it looks:
 1. The client initiates the handshake by sending a “hello” message to the server and also include a list of cryptos it can understand and a string of random data known as the “client random” (this will be used later)
-2. The server says “hello” back and include the servers public certificate*, the server's chosen cipher suite and also the “server random” – it's random data
-3. The client verifies the certificate that the server sent is actually correct, i.e. that the server is who it says it is. The client does this by using a list of pre-existing certificate authorities that is included in, and updated by, the computers Operating System (macOS, Windows, iOS, Android etc.)
-4. The “premaster secret”: The client sends one more random string of data, the “premaster secret”. This is encrypted with the servers public key and can only be decrypted with the private key **that only the server has**. (The client gets the public key from the server's SSL certificate.) This is the secret in the sauce!!
-5. The server decrypts the premaster secret
-6. Session keys created: Both client and server generate session keys from the “client random”, the “server random”, and the ”premaster secret”. They should arrive at the same results.
-7. Client is ready: The client sends a “finished” message that is encrypted with a session key
-8. Server is ready: The server sends a “finished” message encrypted with a session key
+2. The server says “hello” back and include the servers public certificate*, the server's chosen cipher suite and also the “server random” (the same kind of random data that the client just generated)
+3. The client verifies servers certificate, i.e. that the server is who it says it is. The client does this by using a list of pre-existing certificate authorities that is included in, and updated by, the computers Operating System (macOS, Windows, iOS, Android etc.)
+4. The client sends one more random string of data, called the “premaster secret”. This is encrypted with the servers public key and can only be decrypted with the private key **that only the server has**. (The client gets the public key from the server's SSL certificate.) This is the secret in the sauce!!
+5. The server decrypts the “premaster secret”
+6. Session keys are now created: both client and server generate session keys from the “client random”, the “server random”, and the ”premaster secret”. Both computers should arrive at the same results
+7. The client is now ready and sends a “finished” message that is encrypted with a session key
+8. Server is also ready and sends a “finished” message encrypted with a session key
 9. The handshake is now completed and secure encryption achieved
 
 *) A “certificate” is a piece of data that is used to verify authenticity, much like certificates in real life. They consist of a public part that is shown to anyone who is interested (i.e. sent over the Internet), and a private part that is never divulged (i.e. never leaves the server where it is stored). In order to be useful, they are part of a “chain of trust”: a number of “root certificates” are included in all modern operating systems, and any certificate that will achieve the green padlock icon in the web browser must be able to be linked to one of those root certificates. Certificates, including root certificates, are issued by a number of corporations with a very strict set of agreed upon requirements in order to achieve its goal: *trust* 
