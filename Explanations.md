@@ -14,15 +14,15 @@ I will go through the following:
 
 It is by no means an exhaustive explanation but merely an “appetiser” of sorts, aiming to direct interest rather than deep explanation.
 
-Oh – there will be pictures! 🤪
+Oh: there will be pictures! 🤪
 
 ---
 
 ## Geo Location
 This is an increasingly interesting topic. Serious financial interest is invested in knowing where potential customers are located; the Ad industry want nothing more than to know *exactly* where *you* are. And those guys are closely followed (?) by various national security organisations with the same goal: to know where *you* are. 
-There are a number of web sites that can geographically locate, “geolocate”, an IP address. Both Apples macOS and Microsoft Windows have API:s for that purpose.
+There are a number of web sites that can geographically locate, “geolocate”, an IP address. Both Apples macOS and Microsoft Windows have code that programmers can use for that very purpose.
 
-So can one trust the geolocation information? Well: you get what you pay for. Since I don't pay in this script, the information is so-so correct. I have rarely seen a country that wasn't correct, but it happens. The city and region has a lower level of correctness. But from most legal aspects (GDPR for instance) country is good enough. If correct geolocation is important to you, please check with other sources as well!
+So can one trust the geolocation information? Well: you get what you pay for. Since I don't pay in this script, the information is only so correct. I have rarely seen a country that wasn't correct, but it happens. The city and region has a lower level of correctness. But from most legal aspects (GDPR for instance) country is good enough. If correct geolocation is important to you, please check with other sources as well!
 
 One simple/primitive way one can check the correcftness of the geolocation is by looking at the ping times.
 
@@ -70,8 +70,8 @@ An authentic example is this ``mtr``-session between my computer in Lund, Sweden
 ![](mtr_to_New_Zealand.png)  
 Here you can see that 24 routers are involved and the ping times accumulate in “chunks”:  
 * while in Sweden, the ping times are below 67 ms and the packets pass 8 routers
-* then it enters the US (on the east coast—I checked😉) and exits on the west coast near Seattle (again, I checked) and the ping times increase from 100 to 200 ms while crossing 11 routers on it's way through the North American continent  
-* then it arrives in New Zealand and we are at around 350 ms and we still have 5 routers to go before we are at the University of Canterbury
+* then it enters the US (on the east coast—I checked😉) and exits on the west coast near Seattle (again, I checked) and the ping times increase from 100 to 200 ms while crossing 11 routers on it's way through the North American continent. The 67 ms jump between #14 and #15 above is probably the continental US crossing  
+* then it arrives in New Zealand and we are at around 350 ms and we still have 5 routers to go before we have arrived at the University of Canterbury
 
 Those who are interested can view the wonderful [Submarine Cable Map](https://www.submarinecablemap.com) to see where the cables under the oceans are actually located!
 
@@ -104,7 +104,7 @@ the server has a private piece of data that it can use to generate a secret ciph
 
 A little bit more expanded this is how it looks:
 1. The client initiates the handshake by sending a “hello” message to the server and also include a list of cryptos it can understand and a string of random data known as the “client random” (this will be used later)
-2. The server says “hello” back and include the servers public certificate, the server's chosen cipher suite and also the “server random” – it's random data
+2. The server says “hello” back and include the servers public certificate*, the server's chosen cipher suite and also the “server random” – it's random data
 3. The client verifies the certificate that the server sent is actually correct, i.e. that the server is who it says it is. The client does this by using a list of pre-existing certificate authorities that is included in, and updated by, the computers Operating System (macOS, Windows, iOS, Android etc.)
 4. The “premaster secret”: The client sends one more random string of data, the “premaster secret”. This is encrypted with the servers public key and can only be decrypted with the private key **that only the server has**. (The client gets the public key from the server's SSL certificate.) This is the secret in the sauce!!
 5. The server decrypts the premaster secret
@@ -113,6 +113,7 @@ A little bit more expanded this is how it looks:
 8. Server is ready: The server sends a “finished” message encrypted with a session key
 9. The handshake is now completed and secure encryption achieved
 
+*) A “certificate” is a piece of data that is used to verify authenticity, much like certificates in real life. They consist of a public part that is shown to anyone who is interested (i.e. sent over the Internet), and a private part that is never divulged (i.e. never leaves the server where it is stored). In order to be useful, they are part of a “chain of trust”: a number of “root certificates” are included in all modern operating systems, and any certificate that will achieve the green padlock icon in the web browser must be able to be linked to one of those root certificates. Certificates, including root certificates, are issued by a number of corporations with a very strict set of requirements in order to achieve it goal: *trust* 
   
 ----
 
