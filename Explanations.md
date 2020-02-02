@@ -113,7 +113,7 @@ A little bit more expanded this is how it looks:
 8. Server is ready: The server sends a “finished” message encrypted with a session key
 9. The handshake is now completed and secure encryption achieved
 
-*) A “certificate” is a piece of data that is used to verify authenticity, much like certificates in real life. They consist of a public part that is shown to anyone who is interested (i.e. sent over the Internet), and a private part that is never divulged (i.e. never leaves the server where it is stored). In order to be useful, they are part of a “chain of trust”: a number of “root certificates” are included in all modern operating systems, and any certificate that will achieve the green padlock icon in the web browser must be able to be linked to one of those root certificates. Certificates, including root certificates, are issued by a number of corporations with a very strict set of requirements in order to achieve its goal: *trust* 
+*) A “certificate” is a piece of data that is used to verify authenticity, much like certificates in real life. They consist of a public part that is shown to anyone who is interested (i.e. sent over the Internet), and a private part that is never divulged (i.e. never leaves the server where it is stored). In order to be useful, they are part of a “chain of trust”: a number of “root certificates” are included in all modern operating systems, and any certificate that will achieve the green padlock icon in the web browser must be able to be linked to one of those root certificates. Certificates, including root certificates, are issued by a number of corporations with a very strict set of agreed upon requirements in order to achieve its goal: *trust* 
   
 ----
 
