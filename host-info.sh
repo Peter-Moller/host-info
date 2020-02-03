@@ -171,18 +171,22 @@ function GeoLocate()
 	#Org="$(less $GeoLocateFile | python -c "import json,sys;obj=json.load(sys.stdin);print obj['org'].encode('utf-8');" | cut -d' ' -f2-)"
 	Org="$(grep '"org"' "$GeoLocateFile" 2>/dev/null | awk -F\" '{print $4}')"
 	# Org='AS1299 Telia Company AB'
+	# Get the reverse DNS-name (and remove the last '.')
+	Reverse="$(/usr/bin/dig +short -x $IP | sed 's/.$//')"
+	# Reverse='ec2-54-246-177-230.eu-west-1.compute.amazonaws.com'
 	CDN_raw="$(echo $Org | awk '{print $2}' | sed -e 's/,$//')"
 	# CDN_raw='Akamai'
 	CDN="$(grep "$CDN_raw" $CDN_file | head -1 | cut -f2)"
 	# CDN='Akamai'
+	# Fix for AWS. This is 'dirty' and I would like to find a better solution!
+	if [ -z "$CDN" ]; then
+		[ -n "$(echo $Reverse | grep -o amazonaws)" ] && CDN="Amazon AWS"
+	fi
 	ASHandle="$(echo "$Org" | awk '{print $1}')"
 	# ASHandle='AS1299'
 
 	# Get the long (real) name of the country
 	CountryName="$(grep $CountryShort "${DirName}/${CountriesFile}" | cut -d: -f2)"	# CountryName='Denmark'
-
-	# Get the reverse DNS-name (and remove the last '.')
-	Reverse="$(/usr/bin/dig +short -x $IP | sed 's/.$//')"
 }
 
 # Get certificate information (if possible)
