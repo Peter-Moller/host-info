@@ -310,7 +310,7 @@ GetSSLCertAttribExplain()
 printf "${ESC}${BlackBack};${WhiteFont}mHost information for:${Reset}${ESC}${WhiteBack};${BlackFont}m $DNS ${Reset}   ${ESC}${BlackBack};${WhiteFont}mDate & time:${ESC}${WhiteBack};${BlackFont}m $(date +%F", "%R) ${Reset}\n"
 printf "${ESC}${BoldFace};${UnderlineFace}mHost info:${Reset}\n"
 
-printf "Gathering geolocation data, please wait..."
+printf "${ESC}${WhiteFont}mGathering geolocation data, please wait...${Reset}"
 GeoLocate
 printf "\033[2K\033[42D"
 printf "${F1}${F2}\n" "IP:" "$IP (reverse lookup: \"$(echo ${Reverse:-—})\")"
@@ -324,16 +324,17 @@ else
 fi
 #[ -n "$PingTimeMS" ] && printf "${F1}${F2}\n" "Ping time:" "$PingTimeMS"
 
-printf "Gathering ping data, please wait..."
+printf "${ESC}${WhiteFont}mGathering ping data, please wait...${Reset}"
 PingTime
 printf "\033[2K\033[35D"
 printf "${F1}${F2}\n" "Ping time:" "${PingTimeMS:---no answer--}"
 echo
 
-[ -z "$OpenSSLToOld" ] && SSLInfo
-printf "Gathering SSL data, please wait..."
-HostInfo
-printf "\033[2K\033[34D"
+if [ -z "$OpenSSLToOld" ]; then
+	printf "${ESC}${WhiteFont}mGathering SSL data, please wait...${Reset}"
+	SSLInfo
+	printf "\033[2K\033[34D"
+fi
 if [ -z "$OpenSSLToOld" ]; then
 	# Only continue if the result is valid
 	if [ $SSLValid -eq 0 ]; then
@@ -376,7 +377,7 @@ else
 	echo "OpenSSL is too old (version: $(openssl version 2>/dev/null | sed -e 's/OpenSSL //')) to test certificates. Upgrade OpenSSL or use a more modern OS!"
 fi
 
-printf "Gathering host data, please wait..."
+printf "${ESC}${WhiteFont}mGathering host data, please wait...${Reset}"
 HostInfo
 printf "\033[2K\033[35D"
 if [ -n "$CurlResponse" ]; then
