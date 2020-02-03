@@ -1,0 +1,166 @@
+att-dsa	AT&T
+akadns	Akamai
+akamai	Akamai
+akamaiedge	Akamai
+akamaihd	Akamai
+akamaistream	Akamai
+akamaitechnologies	Akamai
+akamaized	Akamai
+akastream	Akamai
+edgekey	Akamai
+edgesuite	Akamai
+srip	Akamai
+tl88	Akamai China CDN
+alikunlun	Alibaba
+aliyuncdn	Alibaba
+tbcache	Alimama
+amazon.com	Amazon AWS
+amazonaws	Amazon AWS
+cloudfront	Amazon CloudFront
+anankecdn	Ananke
+azion	Azion
+azioncdn	Azion
+qingcdn	BaishanCloud
+belugacdn	BelugaCDN
+bisongrid	Bison Grid
+bitgravity	BitGravity
+bluehatnetwork	Blue Hat Network
+cdn77	CDN77
+cdnga	CDNetworks
+cdngc	CDNetworks
+cdngd	CDNetworks
+cdngs	CDNetworks
+gccdn	CDNetworks
+panthercdn	CDNetworks
+cdnify	CDNify
+cdnsun	CDNsun
+cachecentric	CacheCentric
+cachefly	Cachefly
+c3cache	ChinaCache
+c3cdn	ChinaCache
+ccgslb	ChinaCache
+chinacache	ChinaCache
+lxdns	ChinaNetCenter
+ourwebpic	ChinaNetCenter
+speedcdns	ChinaNetCenter
+wscdns	ChinaNetCenter
+wscloudcdn	ChinaNetCenter
+cloudflare	Cloudflare
+cotcdn	Cotendo CDN
+distil	Distil Networks
+edgecastcdn	EdgeCast
+systemcdn	EdgeCast
+alphacdn	Edgecast
+betacdn	Edgecast
+chicdn	Edgecast
+epsiloncdn	Edgecast
+etacdn	Edgecast
+iotacdn	Edgecast
+kappacdn	Edgecast
+mucdn	Edgecast
+nucdn	Edgecast
+omegacdn	Edgecast
+omicroncdn	Edgecast
+psicdn	Edgecast
+rhocdn	Edgecast
+sigmacdn	Edgecast
+smecdn	Edgecast
+taucdn	Edgecast
+thetacdn	Edgecast
+transactcdn	Edgecast
+transactcdn	Edgecast
+upsiloncdn	Edgecast
+v1cdn	Edgecast
+v2cdn	Edgecast
+v3cdn	Edgecast
+v4cdn	Edgecast
+v5cdn	Edgecast
+xicdn	Edgecast
+zetacdn	Edgecast
+fasterized	Fasterize
+fastly	Fastly
+fastlylb	Fastly
+nocookie	Fastly
+secretcdn	Fastly
+gcdn	G-Core Labs
+cdn	GoCache
+doubleclick	Google
+googlehosted	Google
+googlesyndication	Google
+googleusercontent	Google
+gstatic	Google
+youtube	Google
+herokuapp	Heroku
+hiberniacdn	HiberniaCDN
+hwcdn	Highwinds
+edgecaching	Hostway
+isprimecdn	ISPrime
+incapdns	Incapsula
+inscname	Instart Logic
+insnw	Instart Logic
+internapcdn	Internap
+vitalstream	Internap
+kxcdn	KeyCDN
+lswcdn	LeaseWeb CDN
+footprint	Level 3
+footprint6	Level 3
+fpbns	Level 3
+fplive	Level 3
+fpondemand	Level 3
+sandpiper	Level 3
+llns	Limelight
+llnwd	Limelight
+llnwi	Limelight
+cdncloud	MediaCloud
+mncdn	Medianova
+azureedge	Microsoft Azure
+msecnd	Microsoft Azure
+instacontent	Mirror Image
+mirror-image	Mirror Image
+ngenix	NGENIX
+nttcdn	NTT
+nyiftw	NYI FTW
+nyiftw	NYI FTW
+netdna	NetDNA
+netdna-cdn	NetDNA
+netdna-ssl	NetDNA
+worldcdn	OnApp
+worldssl	OnApp
+optimalcdn	Optimal CDN
+pagerain	PageRain
+mwcloudcdn	Quantil
+mwcname	Quantil
+raxcdn	Rackspace
+resrc	ReSRC.it
+rlcdn	Reapleaf
+reblaze	Reblaze
+rncdn1	Reflected Networks
+revcn	Rev Software
+revdn	Rev Software
+simplecdn	Simple CDN
+sitelockcdn	SiteLock
+swiftcdn	SwiftCDN
+swiftcdn1	SwiftCDN
+swiftserve	SwiftServe
+syndn	Synedge
+taobao	Taobao
+taobaocdn	Taobao
+tbcdn	Taobao
+cdn	Telefonica
+cdntel	Telenor
+teliasoneracdn	TeliaSonera
+teridions	Teridion
+edge2befaster	TransparentCDN
+turbobytes	Turbobytes
+turbobytes-cdn	Turbobytes
+unicorncdn	UnicornCDN
+voxcdn	VoxCDN
+lagrangesystems	Webscale Networks
+wp	WordPress
+yahooapis	Yahoo
+yimg	Yahoo
+yottaa	Yottaa
+zenedge	Zenedge
+cubecdn	cubeCDN
+section	section.io
+squixa	section.io

@@ -7,6 +7,7 @@
 
 GeoLookupURL="ipinfo.io"
 CountriesFile="Countries.txt"
+CDN_file="cdn.txt"
 # (Colors can be found at http://en.wikipedia.org/wiki/ANSI_escape_code, http://graphcomp.com/info/specs/ansi_col.html and other sites)
 Reset="\e[0m"
 ESC="\e["
@@ -170,6 +171,10 @@ function GeoLocate()
 	#Org="$(less $GeoLocateFile | python -c "import json,sys;obj=json.load(sys.stdin);print obj['org'].encode('utf-8');" | cut -d' ' -f2-)"
 	Org="$(grep '"org"' "$GeoLocateFile" 2>/dev/null | awk -F\" '{print $4}')"
 	# Org='AS1299 Telia Company AB'
+	CDN_raw="$(echo $Org | awk '{print $2}' | sed -e 's/,$//')"
+	# CDN_raw='Akamai'
+	CDN="$(grep "$CDN_raw" $CDN_file | head -1 | cut -f2)"
+	# CDN='Akamai'
 	ASHandle="$(echo "$Org" | awk '{print $1}')"
 	# ASHandle='AS1299'
 
@@ -294,23 +299,41 @@ GetSSLCertAttribExplain()
 
 # START OF ACTUAL WORK
 
-printf "Gathering data, please wait..."
-GeoLocate
-[ -z "$OpenSSLToOld" ] && SSLInfo
-HostInfo
-PingTime
-printf "\033[2K\n"
+##printf "Gathering data, please wait..."
+##GeoLocate
+##[ -z "$OpenSSLToOld" ] && SSLInfo
+##HostInfo
+##PingTime
+##printf "\033[2K\033[30D"
 
 # Print it:
 printf "${ESC}${BlackBack};${WhiteFont}mHost information for:${Reset}${ESC}${WhiteBack};${BlackFont}m $DNS ${Reset}   ${ESC}${BlackBack};${WhiteFont}mDate & time:${ESC}${WhiteBack};${BlackFont}m $(date +%F", "%R) ${Reset}\n"
 printf "${ESC}${BoldFace};${UnderlineFace}mHost info:${Reset}\n"
+
+printf "Gathering geolocation data, please wait..."
+GeoLocate
+printf "\033[2K\033[42D"
 printf "${F1}${F2}\n" "IP:" "$IP (reverse lookup: \"$(echo ${Reverse:-—})\")"
 printf "${F1}${F2}\n" "Country:" "${CountryName:-—}"
 printf "${F1}${F2}\n" "City:" "${City:-—} (region: ${Region:-—})"
 printf "${F1}${F2}\n" "Org.:" "$Org  (See: \"https://ipinfo.io/$ASHandle\" for more info)"
+if [ -n "$CDN" ]; then
+	printf "${F1}${F2}\n" "CDN:" "Site is serverd by the CDN \"$CDN\". Geolocation should not be trusted!"
+else
+	printf "${F1}${F2}\n" "CDN:" "No CDN detected"
+fi
 #[ -n "$PingTimeMS" ] && printf "${F1}${F2}\n" "Ping time:" "$PingTimeMS"
+
+printf "Gathering ping data, please wait..."
+PingTime
+printf "\033[2K\033[35D"
 printf "${F1}${F2}\n" "Ping time:" "${PingTimeMS:---no answer--}"
 echo
+
+[ -z "$OpenSSLToOld" ] && SSLInfo
+printf "Gathering SSL data, please wait..."
+HostInfo
+printf "\033[2K\033[34D"
 if [ -z "$OpenSSLToOld" ]; then
 	# Only continue if the result is valid
 	if [ $SSLValid -eq 0 ]; then
@@ -352,6 +375,10 @@ if [ -z "$OpenSSLToOld" ]; then
 else
 	echo "OpenSSL is too old (version: $(openssl version 2>/dev/null | sed -e 's/OpenSSL //')) to test certificates. Upgrade OpenSSL or use a more modern OS!"
 fi
+
+printf "Gathering host data, please wait..."
+HostInfo
+printf "\033[2K\033[35D"
 if [ -n "$CurlResponse" ]; then
 	echo
 	printf "${ESC}${BoldFace};${UnderlineFace}mServer info:${Reset}\n"
