@@ -318,15 +318,16 @@ printf "${ESC}${WhiteFont}mGathering geolocation data, please wait...${Reset}"
 GeoLocate
 printf "\033[2K\033[42D"
 printf "${F1}${F2}\n" "IP:" "$IP (reverse lookup: \"$(echo ${Reverse:-—})\")"
-printf "${F1}${F2}\n" "Country:" "${CountryName:-—}"
-printf "${F1}${F2}\n" "City:" "${City:-—} (region: ${Region:-—})"
-printf "${F1}${F2}\n" "Org.:" "$Org  (See: \"https://ipinfo.io/$ASHandle\" for more info)"
 if [ -n "$CDN" ]; then
-	printf "${F1}${F2}\n" "CDN:" "Site is serverd by the CDN \"$CDN\". Geolocation should not be trusted!"
+	printf "${F1}${F2}\n" "CDN:" "Site is serverd by the CDN \"$CDN\". Geolocation might not be correct."
+	printf "${ESC}${ItalicFace}m${F1}${F2}${Reset}\n" "Country:" "${CountryName:-—}"
+	printf "${ESC}${ItalicFace}m${F1}${F2}${Reset}\n" "City:" "${City:-—} (region: ${Region:-—})"
 else
 	printf "${F1}${F2}\n" "CDN:" "No CDN detected"
+	printf "${F1}${F2}\n" "Country:" "${CountryName:-—}"
+	printf "${F1}${F2}\n" "City:" "${City:-—} (region: ${Region:-—})"
 fi
-#[ -n "$PingTimeMS" ] && printf "${F1}${F2}\n" "Ping time:" "$PingTimeMS"
+printf "${F1}${F2}\n" "Org.:" "$Org  (See: \"https://ipinfo.io/$ASHandle\" for more info)"
 
 printf "${ESC}${WhiteFont}mGathering ping data, please wait...${Reset}"
 PingTime
