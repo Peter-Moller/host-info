@@ -180,7 +180,7 @@ function GeoLocate()
 	# CDN='Akamai'
 	# Fix for AWS. This is 'dirty' and I would like to find a better solution!
 	if [ -z "$CDN" ]; then
-		[ -n "$(echo $Reverse | grep -o amazonaws)" ] && CDN="Amazon AWS"
+		[ -n "$(echo $Reverse | egrep -o "amazonaws|cloudfront")" ] && CDN="Amazon AWS"
 	fi
 	ASHandle="$(echo "$Org" | awk '{print $1}')"
 	# ASHandle='AS1299'
