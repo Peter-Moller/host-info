@@ -344,6 +344,7 @@ if [ -z "$OpenSSLToOld" ]; then
 	# Only continue if the result is valid
 	if [ $SSLValid -eq 0 ]; then
 		printf "${ESC}${BoldFace};${UnderlineFace}mCertificate info:${Reset}\n"
+		printf "${F1}${F2}\n" "Protocol:" "${SSLProtocol} (Note: TLS is not part of the certificate!)"
 		[ -z "$PortGiven" ] && printf "${ESC}${ItalicFace}mNo port given: SSL-info based on a guess of port \"443\"!!${Reset}\n"
 		if [ "$SSLReturnText" = "Certificate is valid" ]; then 
 			Color="${ESC}${GreenFont}m"
@@ -358,7 +359,6 @@ if [ -z "$OpenSSLToOld" ]; then
 		[ -z "$SSLAppropriate" ] && printf  "${F1}${ESC}${RedFont}m${F2}${Reset}\n" "" "Note: this certificate DOES NOT cover \"$DNS\"!"
 		printf "${F1}${F2}\n" "Valid from:" "$SSLValidFrom"
 		printf "${F1}${F2}\n" "Valid to:" "$SSLValidTo"
-		printf "${F1}${F2}\n" "Protocol:" "${SSLProtocol}"
 		printf "${F1}${F2}\n" "Bits:" "${SSLBits}"
 		printf "${F1}${F2}\n" "Signature algoritm:" "${SSLSignAlgoritm}  (“${SSLSignAlgoritmText:--No explanaination for this algoritm-}”)"
 		printf "${F1}${F2}\n" "Issuer:" "${SSLIssuer}"
