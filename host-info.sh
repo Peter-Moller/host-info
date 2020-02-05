@@ -176,7 +176,7 @@ function GeoLocate()
 	# Reverse='ec2-54-246-177-230.eu-west-1.compute.amazonaws.com'
 	CDN_raw="$(echo $Org | awk '{print $2}' | sed -e 's/,$//')"
 	# CDN_raw='Akamai'
-	CDN="$(grep "$CDN_raw" $CDN_file | head -1 | cut -f2)"
+	CDN="$(grep "$CDN_raw" "${DirName}/$CDN_file" | head -1 | cut -f2)"
 	# CDN='Akamai'
 	# Fix for AWS. This is 'dirty' and I would like to find a better solution!
 	if [ -z "$CDN" ]; then
