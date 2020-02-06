@@ -98,7 +98,7 @@ Before we get into how it actually works, we must explain *certificates*.
 ![](Certificate.jpg)  
 Like certificates in the real world, digital certificates are used to officially state that something is true. They are used to secure web sites, email and software (to combat malware).
 
-Digital certificates are based on mathematics. They have a certain validity period and they can be *revoked*, i.e. stop working on a command from a central authority. They exist in *chains* such as this one for one of our servers:  
+Digital certificates are based on mathematics. They have a certain validity period and they can be [*revoked*](https://en.wikipedia.org/wiki/Certificate_revocation_list), i.e. stop working on a command from a central authority. They exist in *chains* such as this one for one of our servers:  
 ![](Certificate-chain_moodle.png)  
 The certificate for the server is linked via an *intermediate certificate* to a [*root certificate*](https://en.wikipedia.org/wiki/Root_certificate) that has been issued by a [Certificate Authority](https://en.wikipedia.org/wiki/Certificate_authority), in this case DigiCert, a commercial corporation. This chain is how certificates can be easily checked, and also revoked.
 
@@ -106,13 +106,20 @@ When one create a request for a certificate, something called a *private key* is
 
 In order to make all this work smoothly, all modern operating systems (macOS, Windows, iOS, Android etc.) as well as web browsers, come with some form of *certificate storage* mechanism that are pre-loaded with a list of trusted CAs (numbering in the hundreds). These pre-installed certificates serve as trust anchors to derive all further trust from and the operating system or web browser update them regularly. When you are visiting an **https** website, your browser verifies that the trust chain presented ends at one of the *locally* trusted root certificates. Thus there is no need to go online to check it in every case.
 
+Globally trusted root certificates are created and maintained by a small number of multinational companies. Due to the technical requirements, the bar to enter this market is quite high. They operate with a very strict set of agreed upon requirements in order to achieve its goal: *trust*
+
+*If you are interested in analyzing certificate, you can go here: https://globalsign.ssllabs.com/analyze.html*
+
+
 ## TLS – why we can do banking on the internet
 All traffic on the internet start “in the clear” which means that anyone listening to the traffic on it's way from you computer to the destination, can hear everything. If that was all, no-one would do any banking: sending you credit card in the clear over an insecure line is today almost the same as giving it to the bad guys.
 
 So how does the Internet deal with this? How do you manage to go from a situation where A and B are talking to one another, in the clear, while C is listening in to everything they are saying, to a situation where only A and B can understand what they are saying? How do they start their “secret talk” with C listening, but without C being able to get in on the secrets?
 
 This is what TLS does. TLS stands for [Transport Layer Security](https://en.wikipedia.org/wiki/Transport_Layer_Security) and supersedes the older “Secure Sockets Layer”. You see it as the green padlock in the left part of the address field at the top of the web browser window. The start of the conversation is the crucial part and is called “TLS handshake”. The inner workings of TLS is mathematics that is way beyond this text, but in short the handshake works like this:  
-the server has a private piece of data that it can use to generate a secret cipher that the client can understand but not a third party.
+– the client sends some random data that is encrypted with the servers public certificate  
+– the server decrypts that using the private key  
+– if it checks out, a secret cipher is generated and used for the session
 
 A little bit more expanded this is how it looks:
 1. The client initiates the handshake by sending a “hello” message to the server and also include a list of cryptos it can understand and a string of random data known as the “client random” (this will be used later)
@@ -124,10 +131,6 @@ A little bit more expanded this is how it looks:
 7. The client is now ready and sends a “finished” message that is encrypted with a session key
 8. Server is also ready and sends a “finished” message encrypted with a session key
 9. The handshake is now completed and secure encryption achieved
-
-*) A “certificate” is a piece of data that is used to verify authenticity, much like certificates in real life. They consist of a public part that is shown to anyone who is interested (i.e. sent over the Internet), and a private part that is never divulged (i.e. never leaves the server where it is stored). In order to be useful, they are part of a “chain of trust”: a number of “root certificates” are included in all modern operating systems, and any certificate that will achieve the green padlock icon in the web browser must be able to be linked to one of those root certificates. Certificates, including root certificates, are issued by a number of corporations with a very strict set of agreed upon requirements in order to achieve its goal: *trust*  
-*If you are interesated in analyzing certificate, you can go here: https://globalsign.ssllabs.com/analyze.html*
-
 
 ----
 
