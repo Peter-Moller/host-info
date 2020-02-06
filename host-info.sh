@@ -269,6 +269,12 @@ function HostInfo()
 	fi
 	ServerHTTPver="$(echo "$CurlResponse" | grep "^HTTP" | head -1 | awk '{print $1}' | sed -e 's;HTTP/;;' | tr -d '\r')"  # ServerHTTPver=1.1
 	ServerServer="$(echo "$CurlResponse" | grep -i "^Server:" | head -1 | cut -d: -f2- | sed -e 's/^\ *//' | tr -d '\r')"  # ServerServer='Apache/2.4.18 (Ubuntu)'
+	# Make ServerServer a bit more clear
+	case "$ServerServer" in
+		gws) ServerServer="gws (Google Web Server)";;
+		ghs) ServerServer="ghs (Google Hosting Server)";;
+		iis) ServerServer="iis (Microsoft Informartion Server)";;
+	esac
 	ServerVia="$(echo "$CurlResponse" | grep -i "^Via:" | head -1 | cut -d: -f2- | sed -e 's/^\ *//' | tr -d '\r')"  # ServerVia='1.1 varnish-v4'
 	ServerXPoweredBy="$(echo "$CurlResponse" | grep -i "^x-powered-by:" | head -1 | cut -d: -f2- | sed -e 's/^\ *//' | tr -d '\r')"  #
 	ServerXGenerator="$(echo "$CurlResponse" | grep -i "^x-generator:" | head -1 | cut -d: -f2- | sed -e 's/^\ *//' | tr -d '\r')"  #
