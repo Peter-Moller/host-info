@@ -45,13 +45,15 @@ The ping time is made up by time spent in various cables (or WiFi) and time spen
 **Time spent in cables**  
 The speed of the data signal is roughly:
 * in the air (WiFi): about the speed of light (called ``c``): 300,000 km/s
-* in an copper wire (ethernet): approx. 64% of ``c``, or 192,000 km/s
-* in an optical cable: between 70% of ``c`` (older cables) to >95% of ``c`` (very modern cables), that is between 210,000 km/s and 285,000 km/s
+* in an copper wire (ethernet): approx. 64% of ``c``, ≈ 192,000 km/s
+* in an optical cable: approx. 70% of ``c``, ≈ 210,000 km/s
 
 So 10 ms will get you:
 * 3,000 km in the air
 * 1,920 km in copper
-* 2,100 – 2,850 km through optical fiber
+* 2,100 through optical fiber
+
+*When doing the calculation, please remember to divide the ping time by 2 since ping measures the **round trip** time!*
 
 **Time spent in routers**  
 This is very hard to specify since it varies greatly depending on both the capacity of the routers and their load. Modern “core routers” have an enormous capacity, but are also quite expensive so they are not changed very often. The actual work the routers perform differs: some just pass the packets between then while others also perform various forms of [traffic shaping](https://en.wikipedia.org/wiki/Traffic_shaping) in order to guarantee that “real time media” (voice and video) get priority over data that are not as urgent.
@@ -100,7 +102,7 @@ Like certificates in the real world, digital certificates are used to officially
 
 Digital certificates are based on mathematics. They have a certain validity period and they can be [*revoked*](https://en.wikipedia.org/wiki/Certificate_revocation_list), i.e. stop working on a command from a central authority. They exist in *chains* such as this one for one of our servers:  
 ![](Certificate-chain_moodle.png)  
-The certificate for the server is linked via an *intermediate certificate* to a [*root certificate*](https://en.wikipedia.org/wiki/Root_certificate) that has been issued by a [Certificate Authority](https://en.wikipedia.org/wiki/Certificate_authority), in this case DigiCert, a commercial corporation. This chain is how certificates can be easily checked, and also revoked.
+The certificate for the server is linked via an *intermediate certificate* to a [*root certificate*](https://en.wikipedia.org/wiki/Root_certificate) that has been issued by a [Certificate Authority](https://en.wikipedia.org/wiki/Certificate_authority), in this case DigiCert, a commercial corporation. (Certificates are part of something called [public key infrastructure, PKI](https://en.wikipedia.org/wiki/Public_key_infrastructure), with the purpose of *binding* public keys with people and organizations). This chain is how certificates can be easily checked, and also revoked.
 
 When one create a request for a certificate, something called a *private key* is also created. This key plays an absolutely fundamental role in the security: it is in fact *the* crucial point of the certificate and it is of paramount importance that this key never gets exposed!! It will reside in a hidden directory on the web server, to be read only by the server software when validating encryption.
 
@@ -131,6 +133,8 @@ A little bit more expanded this is how it looks:
 7. The client is now ready and sends a “finished” message that is encrypted with a session key
 8. Server is also ready and sends a “finished” message encrypted with a session key
 9. The handshake is now completed and secure encryption achieved
+
+There is, of course, more to TLS. There is, for instance, something very nifty called [Forward Security](https://en.wikipedia.org/wiki/Forward_secrecy) that will protect the traffic even if it is captured and the private key in the future should be compromised.
 
 ----
 
