@@ -10,6 +10,7 @@ I will go through the following:
 * How things get from one point to another (“The way of the data”)
 * Does it really matter? (“Time is money”)
 * Are we there yet? (“CDN – Content Delivery Network”)
+* Are you sure? (“Certificates”)
 * Who knows about my credit card? (“TLS – why we can do banking on the internet”)
 
 It is by no means an exhaustive explanation but merely an “appetiser” of sorts, aiming to direct interest rather than deep explanation.
