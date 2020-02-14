@@ -101,17 +101,18 @@ Before we get into how it actually works, we must explain *certificates*.
 ![](Certificate.jpg)  
 Like certificates in the real world, digital certificates are used to officially state that something is true. They are used to secure web sites, email and software (to combat malware).
 
-Digital certificates are based on mathematics. They have a certain validity period and they can be [*revoked*](https://en.wikipedia.org/wiki/Certificate_revocation_list), i.e. stop working on a command from a central authority. They exist in *chains* such as this one for one of our servers:  
+Digital certificates are based on mathematics. They have a certain validity period and they can be [*revoked*](https://en.wikipedia.org/wiki/Certificate_revocation_list), i.e. stop being valid (trusted) on a command from a central authority. They exist in *chains* such as this one for one of our servers at my department:  
 ![](Certificate-chain_moodle.png)  
 The certificate for the server is linked via an *intermediate certificate* to a [*root certificate*](https://en.wikipedia.org/wiki/Root_certificate) that has been issued by a [Certificate Authority](https://en.wikipedia.org/wiki/Certificate_authority), in this case DigiCert, a commercial corporation. (Certificates are part of something called [public key infrastructure, PKI](https://en.wikipedia.org/wiki/Public_key_infrastructure), with the purpose of *binding* public keys with people and organizations). This chain is how certificates can be easily checked, and also revoked.
 
-When one create a request for a certificate, something called a *private key* is also created. This key plays an absolutely fundamental role in the security: it is in fact *the* crucial point of the certificate and it is of paramount importance that this key never gets exposed!! It will reside in a hidden directory on the web server, to be read only by the server software when validating encryption.
+When one create a request for a certificate, a pair of keys is created: a *public key* and a *private key*. The public key is shared (and has to be shared) with anyone. The private key is *not*: the privacy and integrity of the private key plays an absolutely fundamental role in the security system. It is in fact *the* crucial point of the certificate and it is of paramount importance that this key never gets exposed!! It will reside in a hidden directory on the web server, to be read only by the server software when performing encryption.
 
 In order to make all this work smoothly, all modern operating systems (macOS, Windows, iOS, Android etc.) as well as web browsers, come with some form of *certificate storage* mechanism that are pre-loaded with a list of trusted CAs (numbering in the hundreds). These pre-installed certificates serve as trust anchors to derive all further trust from and the operating system or web browser update them regularly. When you are visiting an **https** website, your browser verifies that the trust chain presented ends at one of the *locally* trusted root certificates. Thus there is no need to go online to check it in every case.
 
-Globally trusted root certificates are created and maintained by a small number of multinational companies. Due to the technical requirements, the bar to enter this market is quite high. They operate with a very strict set of agreed upon requirements in order to achieve its goal: *trust*
+Globally trusted root certificates are created and maintained by a small number of multinational companies. Due to the technical requirements, the bar to enter this market is quite high. They operate with a very strict set of agreed upon requirements in order to achieve its goal: *trust*.  
+*(Note: certificate authorities both can be, and have been removed from the list of trusted root servers!)*
 
-*If you are interested in analyzing certificate, you can go here: https://globalsign.ssllabs.com/analyze.html*
+If you are interested in analyzing certificate, you can go here: https://globalsign.ssllabs.com/analyze.html
 
 
 ## TLS – why we can do banking on the internet
