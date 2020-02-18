@@ -51,6 +51,10 @@ Since most synchronization software (DropBox, OneDrive, Google Drive, iCloud etc
 
 *(Note that the `lsof` output above will also output number of connections, running application and running user. Also note that with `lsof` you must be running as `root` in order to see processes other than your own.)*
 
+### Pro tip!
+
+You can use this to find where your various cloud storage is located. Use the `lsof` string above and look for connections to `couldd`, `Box Sync`, `Backup and Sync` (Google), `Dropbox` or `OneDrive`! There you will get a number of IP-addresses and protocol (hint: they all use `https`) and you can look them up and know for yourself where they are!
+
 -----
 
 ## Screen shots:
