@@ -317,7 +317,7 @@ GetSSLCertAttribExplain()
 ##printf "\033[2K\033[30D"
 
 # Print it:
-printf "${ESC}${BlackBack};${WhiteFont}mHost information for:${Reset}${ESC}${WhiteBack};${BlackFont}m $DNS ${Reset}   ${ESC}${BlackBack};${WhiteFont}mDate & time:${ESC}${WhiteBack};${BlackFont}m $(date +%F", "%R) ${Reset}\n"
+printf "${ESC}${BlackBack};${WhiteFont}mHost information for:${Reset}${ESC}${WhiteBack};${BlackFont}m ${DNS:-$IP} ${Reset}   ${ESC}${BlackBack};${WhiteFont}mDate & time:${ESC}${WhiteBack};${BlackFont}m $(date +%F", "%R) ${Reset}\n"
 printf "${ESC}${BoldFace};${UnderlineFace}mHost info:${Reset}\n"
 
 printf "${ESC}${WhiteFont}mGathering geolocation data, please wait...${Reset}"
