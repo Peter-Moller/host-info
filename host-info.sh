@@ -205,7 +205,7 @@ function SSLInfo()
 	SSLValid="$?"
 	# If we don't have a good result, there's no need to continue (won't do it in the prentout either)
 	if [ $SSLValid -eq 0 ]; then
-		SSLReturnCode="$(grep "Verify return code:" "$CertificateFile" | cut -d: -f2)"  # SSLReturnCode=' 10 (certificate has expired)'
+		SSLReturnCode="$(grep "Verify return code:" "$CertificateFile" | cut -d: -f2 | sort -u)"  # SSLReturnCode=' 10 (certificate has expired)'
 		if [ $(echo "$SSLReturnCode" | cut -d\( -f1) -eq 0 ]; then
 			SSLReturnText="Certificate is valid"
 		else
